@@ -2,859 +2,515 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Касса и Терминал</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Регистратура поликлиники</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; font-size: 15px; line-height: 1.5; }
-  .hidden { display: none !important; }
-  #terminalApp { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 16px; }
-  .term-box { width: 100%; max-width: 460px; background: #fff; border-radius: 20px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
-  .term-box h1 { font-size: 22px; text-align: center; margin-bottom: 4px; }
-  .term-box .sub { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 20px; }
-  .btn { padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; width: 100%; margin-bottom: 8px; }
-  .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-primary { background: #6366f1; color: #fff; }
-  .btn-success { background: #10b981; color: #fff; }
-  .btn-danger { background: #ef4444; color: #fff; }
-  .btn-ghost { background: #f1f5f9; color: #64748b; }
-  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 16px; }
-  .status-pill.wait { background: #fef3c7; color: #b45309; }
-  .status-pill.ok { background: #dcfce7; color: #15803d; }
-  .id-big { text-align: center; font-size: 42px; font-weight: 900; letter-spacing: 8px; font-family: 'Courier New', monospace; background: #eef2ff; color: #4f46e5; padding: 20px; border-radius: 14px; border: 2px dashed #818cf8; margin-bottom: 16px; }
-  .screen { background: #0d1b2a; color: #7CFC00; font-family: 'Courier New', monospace; padding: 24px; border-radius: 14px; text-align: center; margin-bottom: 16px; min-height: 120px; }
-  .screen .label { color: #4da6ff; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
-  .screen .val { font-size: 32px; color: #FFD700; font-weight: 900; }
-  .screen .msg { font-size: 16px; margin-top: 8px; }
-  .pin-row { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; min-height: 24px; }
-  .pin-row .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #6366f1; transition: 0.2s; }
-  .pin-row .dot.on { background: #6366f1; box-shadow: 0 0 10px #6366f1; }
-  .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-  .pin-grid button { padding: 16px; border: none; border-radius: 10px; background: #f1f5f9; font-size: 22px; font-weight: 800; cursor: pointer; font-family: 'Courier New', monospace; }
-  .pin-grid button:active { background: #e2e8f0; }
-  .result-icon { font-size: 64px; text-align: center; margin-bottom: 12px; }
+  :root{
+    --accent:#2f6fed; --accent-dark:#1e56c8; --bg1:#eef3ff; --bg2:#e6fbf7;
+    --card:#ffffff; --text:#1c2333; --muted:#6b7590; --line:#e4e9f5;
+    --danger:#e5484d; --ok:#1a9e6c; --radius:16px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:"Segoe UI", system-ui, -apple-system, sans-serif;
+    color:var(--text);
+    background:linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1020px; margin:0 auto; padding:24px 16px 60px;}
 
-  #cashierApp { max-width: 1200px; margin: 0 auto; padding: 16px; }
-  .cashier-header { background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-  .cashier-header h1 { font-size: 20px; }
-  .terminal-bar { padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
-  .terminal-bar.wait { background: #fef3c7; color: #92400e; }
-  .terminal-bar.ok { background: #dcfce7; color: #15803d; }
-  .terminal-bar.err { background: #fee2e2; color: #b91c1c; }
-  .cashier-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .cashier-tab { padding: 10px 18px; border: none; border-radius: 10px; background: #fff; color: #64748b; font-weight: 700; cursor: pointer; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .cashier-tab.active { background: #6366f1; color: #fff; }
-  .cashier-panel { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-  .cashier-panel h3 { font-size: 17px; margin-bottom: 12px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-  .row > * { flex: 1; min-width: 120px; }
-  input, select { padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; background: #fff; color: #1e293b; width: 100%; }
-  input:focus, select:focus { border-color: #6366f1; }
-  .cashier-btn { padding: 10px 18px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
-  .cashier-btn.primary { background: #6366f1; color: #fff; }
-  .cashier-btn.success { background: #10b981; color: #fff; }
-  .cashier-btn.danger { background: #ef4444; color: #fff; }
-  .cashier-btn.ghost { background: #f1f5f9; color: #64748b; }
-  .cashier-btn:active { transform: scale(0.97); }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th { background: #f1f5f9; padding: 10px; text-align: left; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; }
-  td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
-  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; margin-bottom: 12px; }
-  .product-card { padding: 12px; background: #f8fafc; border-radius: 10px; border: 2px solid transparent; }
-  .product-card .name { font-weight: 700; margin-bottom: 4px; }
-  .product-card .price { color: #10b981; font-weight: 700; font-family: 'Courier New', monospace; }
-  .product-card .barcode { font-size: 11px; color: #94a3b8; font-family: monospace; }
-  .total-box { text-align: right; font-size: 24px; font-weight: 900; color: #6366f1; margin-top: 12px; }
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 999; padding: 20px; }
-  .modal.show { display: flex; }
-  .modal-box { background: #fff; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; }
-  .modal-box h3 { font-size: 18px; margin-bottom: 16px; text-align: center; }
-  .modal-label { font-size: 13px; font-weight: 700; margin-bottom: 6px; display: block; color: #475569; }
-  .cancel-summary { background: #f1f5f9; padding: 12px; border-radius: 10px; margin-bottom: 16px; text-align: center; }
-  .cancel-summary .lbl { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-  .cancel-summary .amt { font-size: 26px; font-weight: 900; color: #ef4444; }
-  .cancel-item-info { font-size: 12px; color: #64748b; margin-top: 6px; text-align: center; }
-  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; z-index: 10000; opacity: 0; transition: 0.3s; pointer-events: none; max-width: 90vw; text-align: center; }
-  .toast.show { opacity: 1; }
+  header{
+    background:linear-gradient(120deg,#2f6fed,#2fb9a8);
+    color:#fff; border-radius:var(--radius); padding:26px 28px;
+    display:flex; align-items:center; gap:18px; box-shadow:0 10px 30px rgba(47,111,237,.25);
+    margin-bottom:22px;
+  }
+  .logo{width:56px; height:56px; border-radius:16px; background:rgba(255,255,255,.18);
+    display:flex; align-items:center; justify-content:center; font-size:30px; flex:none;}
+  header h1{font-size:24px; font-weight:700;}
+  header p{opacity:.85; font-size:14px; margin-top:4px;}
+
+  nav{display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap;}
+  nav button{
+    border:none; background:#fff; color:var(--muted); padding:11px 20px; border-radius:999px;
+    font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(28,35,51,.06);
+    transition:.2s;
+  }
+  nav button:hover{color:var(--accent);}
+  nav button.active{background:var(--accent); color:#fff; box-shadow:0 6px 16px rgba(47,111,237,.35);}
+
+  .card{background:var(--card); border-radius:var(--radius); padding:24px;
+    box-shadow:0 6px 24px rgba(28,35,51,.07); margin-bottom:22px;}
+  .card h2{font-size:18px; margin-bottom:16px; display:flex; align-items:center; gap:8px;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;}
+  label{display:block; font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px;}
+  input, select{
+    width:100%; padding:11px 14px; border:1.5px solid var(--line); border-radius:12px;
+    font-size:15px; background:#fbfcff; outline:none; transition:.2s; color:var(--text);
+  }
+  input:focus, select:focus{border-color:var(--accent); background:#fff;
+    box-shadow:0 0 0 4px rgba(47,111,237,.12);}
+  input[readonly]{background:#f1f4fb; color:#3c4b6b;}
+  .btn{
+    border:none; border-radius:12px; padding:12px 22px; font-size:15px; font-weight:600;
+    cursor:pointer; transition:.2s; background:var(--accent); color:#fff;
+  }
+  .btn:hover{background:var(--accent-dark); transform:translateY(-1px);}
+  .btn.gray{background:#eef1f8; color:var(--text);}
+  .btn.gray:hover{background:#e2e7f2;}
+  .btn.danger{background:#fdeaea; color:var(--danger);}
+  .btn.danger:hover{background:#fbdcdc;}
+  .btn.small{padding:7px 14px; font-size:13px; border-radius:9px;}
+
+  .hint{font-size:13px; color:var(--muted); margin-top:10px;}
+  .msg{padding:12px 16px; border-radius:12px; font-size:14px; margin-bottom:14px; display:none;}
+  .msg.ok{background:#e6f7ef; color:var(--ok); display:block;}
+  .msg.err{background:#fdeaea; color:var(--danger); display:block;}
+
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  th{ text-align:left; color:var(--muted); font-size:12px; text-transform:uppercase;
+      letter-spacing:.4px; padding:10px 12px; border-bottom:2px solid var(--line);}
+  td{padding:12px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#f7f9ff;}
+  .num-badge{display:inline-block; background:#eaf1ff; color:var(--accent-dark);
+    font-weight:700; padding:3px 10px; border-radius:8px; font-size:13px; letter-spacing:.5px;}
+  .scroll-x{overflow-x:auto;}
+
+  .doc-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;}
+  .doc-card{border:1.5px solid var(--line); border-radius:14px; padding:18px; transition:.2s;}
+  .doc-card:hover{border-color:var(--accent); box-shadow:0 8px 20px rgba(47,111,237,.12);}
+  .doc-card .avatar{width:44px; height:44px; border-radius:12px; display:flex; align-items:center;
+    justify-content:center; font-size:22px; background:#eaf1ff; margin-bottom:10px;}
+  .doc-card h3{font-size:15px; margin-bottom:4px;}
+  .doc-card .spec{color:var(--accent); font-weight:600; font-size:13px; margin-bottom:8px;}
+  .doc-card .meta{font-size:13px; color:var(--muted); line-height:1.6;}
+
+  .times{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .times span{
+    padding:8px 12px; border-radius:9px; border:1.5px solid var(--line); font-size:13px;
+    font-weight:600; cursor:pointer; transition:.15s; background:#fbfcff;
+  }
+  .times span:hover{border-color:var(--accent); color:var(--accent);}
+  .times span.sel{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .times span.off{opacity:.35; cursor:not-allowed;}
+
+  .empty{text-align:center; color:var(--muted); padding:28px 10px; font-size:14px;}
+  .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .hidden{display:none!important;}
+  .stat-row{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:22px;}
+  .stat{flex:1; min-width:150px; background:#fff; border-radius:var(--radius); padding:16px 20px;
+    box-shadow:0 6px 24px rgba(28,35,51,.07);}
+  .stat b{font-size:26px; display:block;}
+  .stat span{font-size:13px; color:var(--muted);}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<!-- ================= ТЕРМИНАЛ ================= -->
-<div id="terminalApp" class="hidden">
-  <div class="term-box">
-    <h1>📟 Терминал</h1>
-    <div class="sub" id="termSubtitle">Создайте терминал и сообщите ID кассиру</div>
-
-    <div id="tStep1">
-      <button class="btn btn-primary" onclick="termCreate()">✨ Создать терминал</button>
-      <button class="btn btn-ghost" id="tRestoreBtn" onclick="termRestore()" style="display:none;">🔁 Восстановить терминал</button>
+  <header>
+    <div class="logo">🏥</div>
+    <div>
+      <h1>Регистратура поликлиники</h1>
+      <p>Приём пациентов с 8:00 до 20:00 &middot; приём 5 минут, перерыв 3 минуты &middot; обед 15 минут</p>
     </div>
+  </header>
 
-    <div id="tStep2" class="hidden">
-      <div class="status-pill wait">⏳ Ожидание кассы</div>
-      <div class="id-big" id="tIdDisplay">----</div>
-      <div style="font-size:12px;color:#64748b;text-align:center;margin-bottom:12px;">Сообщите этот ID кассиру</div>
-      <button class="btn btn-ghost" onclick="termNewId()">🔄 Создать новый ID</button>
-    </div>
+  <div class="stat-row">
+    <div class="stat"><b id="statPatients">0</b><span>пациентов</span></div>
+    <div class="stat"><b id="statDoctors">0</b><span>врачей</span></div>
+    <div class="stat"><b id="statApps">0</b><span>записей</span></div>
+  </div>
 
-    <div id="tStep3" class="hidden">
-      <div class="status-pill wait">⏳ Касса подключается...</div>
-      <div class="screen"><div class="label">Запрос</div><div class="msg">Касса хочет подключиться</div></div>
-      <button class="btn btn-success" onclick="termConfirm()" id="tConfirmBtn">✅ Подтвердить подключение</button>
-      <button class="btn btn-ghost" onclick="termNewOperation()">❌ Отмена</button>
-    </div>
+  <nav>
+    <button class="active" data-tab="patients">🧑 Пациенты</button>
+    <button data-tab="doctors">🩺 Врачи</button>
+    <button data-tab="appointment">📅 Запись к врачу</button>
+    <button data-tab="schedule">📋 Расписание</button>
+  </nav>
 
-    <div id="tStep4" class="hidden">
-      <div class="status-pill ok">✅ Касса подключена</div>
-      <div class="screen"><div class="label">Готов к оплате</div><div class="msg">Ожидание суммы от кассира...</div></div>
-      <button class="btn btn-ghost" onclick="termNewOperation()">❌ Отмена</button>
-    </div>
-
-    <div id="tStep5" class="hidden">
-      <div class="status-pill ok">✅ Касса подключена</div>
-      <div class="screen"><div class="label">К оплате</div><div class="val" id="tAmount">0.00 ₽</div></div>
-      <div class="pin-row" id="tPinDots">
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <!-- ПАЦИЕНТЫ -->
+  <section id="tab-patients">
+    <div class="card">
+      <h2>➕ Добавить пациента</h2>
+      <div id="patientMsg" class="msg"></div>
+      <div class="grid">
+        <div><label>Полис ОМС (16 цифр)</label><input id="pPolicy" maxlength="19" placeholder="0000 0000 0000 0000"></div>
+        <div><label>ФИО</label><input id="pFio" placeholder="Иванов Иван Иванович"></div>
+        <div><label>Дата рождения</label><input id="pBirth" type="date"></div>
+        <div><label>Телефон</label><input id="pPhone" maxlength="18" placeholder="+7 (___) ___-__-__"></div>
       </div>
-      <div class="pin-grid" id="tPinGrid"></div>
-      <button class="btn btn-success" onclick="termSubmitPin()" id="tSubmitBtn" disabled>✅ Оплатить</button>
-      <button class="btn btn-danger" onclick="termCancel()">❌ Отказ</button>
+      <div class="row" style="margin-top:16px">
+        <button class="btn" onclick="addPatient()">Зарегистрировать пациента</button>
+        <span class="hint" id="numPreview">Номер будет присвоен автоматически</span>
+      </div>
     </div>
 
-    <div id="tStep6" class="hidden">
-      <div class="screen"><div class="label">Обработка</div><div class="msg">Связь с банком...</div></div>
-    </div>
-
-    <div id="tStep7" class="hidden">
-      <div id="tResult"></div>
-      <button class="btn btn-primary" onclick="termNewOperation()" style="margin-top:16px;">🔄 Новая операция</button>
-    </div>
-  </div>
-</div>
-
-<!-- ================= КАССА ================= -->
-<div id="cashierApp" class="hidden">
-  <div class="cashier-header">
-    <div><h1>💼 Касса</h1></div>
-    <div class="terminal-bar wait" id="termBar">📟 Терминал не настроен</div>
-  </div>
-
-  <div class="cashier-tabs">
-    <button class="cashier-tab active" data-tab="sale" onclick="switchCashierTab('sale')">🛒 Продажа</button>
-    <button class="cashier-tab" data-tab="products" onclick="switchCashierTab('products')">📦 Товары</button>
-    <button class="cashier-tab" data-tab="terminal" onclick="switchCashierTab('terminal')">📟 Терминал</button>
-  </div>
-
-  <div id="tab-sale">
-    <div class="cashier-panel">
-      <h3>🛒 Корзина</h3>
-      <div style="overflow-x:auto;">
+    <div class="card">
+      <h2>👥 Список пациентов</h2>
+      <input id="pSearch" placeholder="Поиск по ФИО, полису или номеру…" style="margin-bottom:14px">
+      <div class="scroll-x">
         <table>
-          <thead><tr><th>Товар</th><th>Цена</th><th>Кол-во</th><th>Сумма</th><th></th></tr></thead>
-          <tbody id="cartBody"><tr><td colspan="5" style="text-align:center;color:#94a3b8;">Пусто</td></tr></tbody>
+          <thead><tr><th>Номер</th><th>ФИО</th><th>Полис ОМС</th><th>Дата рождения</th><th>Телефон</th><th></th></tr></thead>
+          <tbody id="patientsBody"></tbody>
         </table>
       </div>
-      <div class="total-box" id="cartTotal">0.00 ₽</div>
+      <div id="patientsEmpty" class="empty hidden">Пациентов пока нет — добавьте первого слева сверху ↑</div>
     </div>
+  </section>
 
-    <div class="cashier-panel">
-      <h3>➕ Добавить товар</h3>
-      <div class="row">
-        <input type="text" id="barcodeInput" placeholder="Штрихкод / название / VXOD-ADMIN23472203" onkeydown="if(event.key==='Enter')addByBarcode()">
-        <input type="number" id="qtyInput" value="1" min="1" style="max-width:100px;">
-        <button class="cashier-btn primary" onclick="addByBarcode()">Добавить</button>
-        <button class="cashier-btn ghost" onclick="clearCart()">Очистить</button>
-      </div>
-      <div style="font-size:11px;color:#94a3b8;margin-top:8px;">
-        💡 Введите <b>VXOD-ADMIN23472203</b> для отмены товара
-      </div>
+  <!-- ВРАЧИ -->
+  <section id="tab-doctors" class="hidden">
+    <div class="card">
+      <h2>🩺 Наши специалисты</h2>
+      <p class="hint" style="margin-top:-8px; margin-bottom:16px">
+        Все врачи ведут приём с 8:00 до 20:00. Приём длится 5 минут, между пациентами перерыв 3 минуты.
+        Время обеда у каждого врача своё — ровно 15 минут в интервале с 12:00 до 13:00.
+      </p>
+      <div class="doc-grid" id="docGrid"></div>
     </div>
+  </section>
 
-    <div class="cashier-panel">
-      <h3>💰 Оплата</h3>
-      <div class="row">
-        <button class="cashier-btn success" onclick="openPayModal('cash')" style="flex:1;padding:16px;font-size:16px;">💵 Наличными</button>
-        <button class="cashier-btn primary" onclick="openPayModal('card')" style="flex:1;padding:16px;font-size:16px;">💳 Картой (терминал)</button>
+  <!-- ЗАПИСЬ -->
+  <section id="tab-appointment" class="hidden">
+    <div class="card">
+      <h2>📅 Новая запись к врачу</h2>
+      <div id="appMsg" class="msg"></div>
+      <div class="grid">
+        <div>
+          <label>Врач</label>
+          <select id="aDoctor"></select>
+        </div>
+        <div>
+          <label>Дата приёма</label>
+          <input id="aDate" type="date">
+        </div>
       </div>
-    </div>
-  </div>
+      <div class="grid" style="margin-top:14px">
+        <div>
+          <label>ФИО пациента <span style="color:var(--accent)">(начните вводить — данные подставятся сами)</span></label>
+          <input id="aFio" list="patientsList" placeholder="Иванов Иван Иванович" autocomplete="off">
+          <datalist id="patientsList"></datalist>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:14px">
+        <div><label>Номер пациента</label><input id="aNum" readonly></div>
+        <div><label>Полис ОМС</label><input id="aPolicy" readonly></div>
+        <div><label>Дата рождения</label><input id="aBirth" readonly></div>
+        <div><label>Телефон</label><input id="aPhone" readonly></div>
+      </div>
 
-  <div id="tab-products" class="hidden">
-    <div class="cashier-panel">
-      <h3>📦 Список товаров</h3>
-      <div class="row">
-        <input type="text" id="newBarcode" placeholder="Штрихкод">
-        <input type="text" id="newName" placeholder="Название">
-        <input type="number" id="newPrice" placeholder="Цена" step="0.01">
-        <button class="cashier-btn success" onclick="addProduct()">➕ Добавить</button>
+      <div style="margin-top:18px">
+        <label>Свободное время приёма <span id="lunchNote" class="hint" style="display:inline; margin:0"></span></label>
+        <div class="times" id="timeChips"><span class="off">Выберите врача и дату</span></div>
+        <input id="aTime" class="hidden">
       </div>
-      <div class="product-grid" id="productsList"></div>
-    </div>
-  </div>
 
-  <div id="tab-terminal" class="hidden">
-    <div class="cashier-panel">
-      <h3>📟 Настройка терминала</h3>
-      <div class="row">
-        <input type="text" id="termIdInput" maxlength="4" placeholder="0000" inputmode="numeric">
-        <button class="cashier-btn success" onclick="saveTerminalId()">💾 Сохранить</button>
-        <button class="cashier-btn danger" onclick="forgetTerminal()">🗑 Забыть</button>
+      <div style="margin-top:18px">
+        <button class="btn" onclick="makeAppointment()">Записать пациента</button>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- РАСПИСАНИЕ -->
+  <section id="tab-schedule" class="hidden">
+    <div class="card">
+      <h2>📋 Записи на приём</h2>
+      <input id="sSearch" placeholder="Поиск по ФИО, врачу или номеру пациента…" style="margin-bottom:14px">
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Дата</th><th>Время</th><th>Врач</th><th>Пациент</th><th>Номер</th><th></th></tr></thead>
+          <tbody id="schedBody"></tbody>
+        </table>
+      </div>
+      <div id="schedEmpty" class="empty hidden">Записей пока нет</div>
+    </div>
+  </section>
+
 </div>
 
-<!-- Модалка оплаты -->
-<div class="modal" id="payModal">
-  <div class="modal-box">
-    <h3 id="payTitle">Оплата</h3>
-    <div id="payCashBlock" class="hidden">
-      <div class="row"><input type="number" id="cashGiven" placeholder="Сумма от покупателя" step="0.01" oninput="calcChange()"></div>
-      <div style="text-align:center;font-size:16px;margin-bottom:16px;">Сдача: <b id="changeVal" style="color:#10b981;">—</b></div>
-    </div>
-    <div id="payCardBlock" class="hidden">
-      <p style="text-align:center;color:#64748b;margin-bottom:16px;">Сумма уйдёт на терминал.</p>
-    </div>
-    <div id="payWaitBlock" class="hidden" style="text-align:center;padding:20px 0;">
-      <div style="font-size:14px;color:#64748b;margin-bottom:12px;" id="payWaitText">Ожидание терминала...</div>
-    </div>
-    <div class="row">
-      <button class="cashier-btn ghost" onclick="closePayModal()" style="flex:1;">Отмена</button>
-      <button class="cashier-btn success" id="payConfirmBtn" onclick="confirmPayment()" style="flex:1;">Подтвердить</button>
-    </div>
-  </div>
-</div>
+<script>
+// ---------- ВРАЧИ ----------
+const doctors = [
+  {id:1, name:"Смирнова Ольга Викторовна", spec:"Терапевт",        cab:"101", lunch:"12:00"},
+  {id:2, name:"Ковалёв Дмитрий Сергеевич", spec:"Хирург",          cab:"105", lunch:"12:15"},
+  {id:3, name:"Романова Елена Андреевна",  spec:"Кардиолог",       cab:"203", lunch:"12:30"},
+  {id:4, name:"Петров Артём Николаевич",   spec:"Офтальмолог",     cab:"207", lunch:"12:45"},
+  {id:5, name:"Ильина Мария Павловна",     spec:"Стоматолог",      cab:"112", lunch:"12:05"},
+  {id:6, name:"Захаров Игорь Львович",     spec:"Педиатр",         cab:"108", lunch:"12:20"},
+  {id:7, name:"Белова Наталья Игоревна",   spec:"Невролог",        cab:"301", lunch:"12:35"},
+  {id:8, name:"Гринёв Павел Олегович",     spec:"ЛОР",             cab:"304", lunch:"12:50"},
+];
 
-<!-- Модалка отмены товара -->
-<div class="modal" id="cancelModal">
-  <div class="modal-box">
-    <h3>🔄 Отмена товара</h3>
+// ---------- СОСТОЯНИЕ ----------
+let state = { patients:[], appointments:[] };
+try{
+  const saved = localStorage.getItem("clinic_reg");
+  if(saved) state = JSON.parse(saved);
+}catch(e){}
+function save(){ localStorage.setItem("clinic_reg", JSON.stringify(state)); }
 
-    <div id="cancelEmpty" class="hidden">
-      <p style="text-align:center;color:#64748b;padding:20px 0;">Корзина пуста</p>
-    </div>
-
-    <div id="cancelForm">
-      <label class="modal-label">Выберите товар:</label>
-      <select id="cancelProductSelect" onchange="updateCancelAmount()" style="margin-bottom:12px;"></select>
-
-      <label class="modal-label">Количество для отмены:</label>
-      <input type="number" id="cancelQuantity" value="1" min="1" step="1" oninput="updateCancelAmount()" style="margin-bottom:12px;">
-
-      <div class="cancel-summary">
-        <div class="lbl">Сумма к возврату</div>
-        <div class="amt" id="cancelAmount">0.00 ₽</div>
-        <div class="cancel-item-info" id="cancelItemInfo">—</div>
-      </div>
-    </div>
-
-    <div class="row">
-      <button class="cashier-btn ghost" onclick="closeCancelModal()" style="flex:1;">Отмена</button>
-      <button class="cashier-btn danger" id="confirmCancelBtn" onclick="confirmCancel()" style="flex:1;">✅ Отменить товар</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, remove, onDisconnect, get }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
-  authDomain: "bk-cashier.firebaseapp.com",
-  databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "bk-cashier",
-  storageBucket: "bk-cashier.firebasestorage.app",
-  messagingSenderId: "385000840969",
-  appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const TERM_PATH = 'terminals';
-const TERM_STORAGE_KEY = 'terminal_my_id';
-const CANCEL_CODE = 'VXOD-ADMIN23472203'; // код отмены
-
-// ==================== ОПРЕДЕЛЕНИЕ УСТРОЙСТВА ====================
-const params = new URLSearchParams(location.search);
-const forceRole = params.get('role');
-const ua = navigator.userAgent.toLowerCase();
-const isMobileUA = /android|iphone|ipad|ipod|mobile|opera mini/.test(ua);
-const isSmallScreen = window.innerWidth <= 820;
-const autoRole = (isMobileUA || isSmallScreen) ? 'terminal' : 'cashier';
-const ROLE = forceRole || autoRole;
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 2500);
+// ---------- УТИЛИТЫ ----------
+function pad(n){ return String(n).padStart(2,"0"); }
+function fmtTime(t){ return pad(Math.floor(t/60)) + ":" + pad(t%60); }
+function toMin(hhmm){ const [h,m]=hhmm.split(":").map(Number); return h*60+m; }
+function toast(el, text, ok){
+  const box = document.getElementById(el);
+  box.className = "msg " + (ok ? "ok" : "err");
+  box.textContent = text;
+  setTimeout(()=>{ box.className="msg"; }, 4000);
+}
+function fmtPhone(v){
+  let d = v.replace(/\D/g,"");
+  if(d.startsWith("8")) d = "7"+d.slice(1);
+  if(!d.startsWith("7")) d = "7"+d;
+  d = d.slice(0,11);
+  let out = "+7";
+  if(d.length>1) out += " ("+d.slice(1,4);
+  if(d.length>=5) out += ") "+d.slice(4,7);
+  if(d.length>=8) out += "-"+d.slice(7,9);
+  if(d.length>=10) out += "-"+d.slice(9,11);
+  return out;
+}
+function fmtPolicy(v){
+  let d = v.replace(/\D/g,"").slice(0,16);
+  return d.replace(/(\d{4})(?=\d)/g,"$1 ");
+}
+function todayStr(){
+  const d = new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 }
 
-function genId() { return String(Math.floor(1000 + Math.random() * 9000)); }
-
-const PIN_THRESHOLD = 1000;
-
-// ==================== ТЕРМИНАЛ ====================
-const termState = { myId: null, pin: '', unsubscribe: null };
-
-function showTermStep(n) {
-  for (let i = 1; i <= 7; i++) {
-    document.getElementById('tStep' + i).classList.toggle('hidden', i !== n);
-  }
-}
-
-window.termCreate = async function() {
-  const id = genId();
-  try {
-    await set(ref(db, `${TERM_PATH}/${id}`), {
-      status: 'waiting', amount: 0, createdAt: Date.now(), updatedAt: Date.now()
-    });
-    onDisconnect(ref(db, `${TERM_PATH}/${id}/status`)).set('disconnected');
-    termState.myId = id;
-    localStorage.setItem(TERM_STORAGE_KEY, id);
-    document.getElementById('tIdDisplay').textContent = id;
-    showTermStep(2);
-    termSubscribe(id);
-    showToast('Терминал создан: ' + id);
-  } catch (e) { showToast('Ошибка: ' + e.message); }
-};
-
-window.termRestore = async function() {
-  const savedId = localStorage.getItem(TERM_STORAGE_KEY);
-  if (!savedId) { showToast('Нет сохранённого ID'); return; }
-  try {
-    const snap = await get(ref(db, `${TERM_PATH}/${savedId}`));
-    termState.myId = savedId;
-    if (snap.exists()) {
-      const data = snap.val();
-      if (data.status === 'disconnected' || data.status === 'waiting') {
-        await update(ref(db, `${TERM_PATH}/${savedId}`), { status: 'waiting', updatedAt: Date.now() });
-      }
-    } else {
-      await set(ref(db, `${TERM_PATH}/${savedId}`), {
-        status: 'waiting', amount: 0, createdAt: Date.now(), updatedAt: Date.now()
-      });
-    }
-    onDisconnect(ref(db, `${TERM_PATH}/${savedId}/status`)).set('disconnected');
-    termSubscribe(savedId);
-    showToast('Терминал восстановлен: ' + savedId);
-  } catch (e) { showToast('Ошибка: ' + e.message); }
-};
-
-function termSubscribe(id) {
-  if (termState.unsubscribe) termState.unsubscribe();
-  termState.unsubscribe = onValue(ref(db, `${TERM_PATH}/${id}`), (snap) => {
-    const data = snap.val();
-    if (!data) {
-      termState.myId = id;
-      showTermStep(2);
-      document.getElementById('tIdDisplay').textContent = id;
-      return;
-    }
-    termUpdateUI(data);
-  }, (e) => console.error('sub', e));
-}
-
-function termUpdateUI(data) {
-  const s = data.status;
-  if (s === 'waiting' || s === 'disconnected') {
-    showTermStep(2);
-    document.getElementById('tIdDisplay').textContent = termState.myId || '----';
-  } else if (s === 'pending') {
-    showTermStep(3);
-    document.getElementById('tConfirmBtn').disabled = false;
-  } else if (s === 'connected') {
-    showTermStep(4);
-  } else if (s === 'waiting_pin') {
-    const wasHidden = document.getElementById('tStep5').classList.contains('hidden');
-    showTermStep(5);
-    document.getElementById('tAmount').textContent = (data.amount || 0).toFixed(2) + ' ₽';
-    if (wasHidden) { termState.pin = ''; termUpdatePin(); termBuildPinGrid(); }
-  } else if (s === 'success') {
-    showTermStep(7);
-    document.getElementById('tResult').innerHTML = `
-      <div class="result-icon">✅</div>
-      <h2 style="text-align:center;color:#10b981;">Успешно</h2>
-      <p style="text-align:center;font-size:16px;">Оплата ${(data.amount || 0).toFixed(2)} ₽</p>`;
-  } else if (s === 'fail') {
-    showTermStep(7);
-    document.getElementById('tResult').innerHTML = `
-      <div class="result-icon">❌</div>
-      <h2 style="text-align:center;color:#ef4444;">Отказ</h2>
-      <p style="text-align:center;font-size:14px;color:#64748b;">${data.reason || 'Операция отклонена'}</p>`;
-  }
-}
-
-window.termConfirm = async function() {
-  if (!termState.myId) return;
-  try {
-    await update(ref(db, `${TERM_PATH}/${termState.myId}`), { status: 'connected', updatedAt: Date.now() });
-    document.getElementById('tConfirmBtn').disabled = true;
-    showToast('Касса подключена');
-  } catch (e) { showToast('Ошибка: ' + e.message); }
-};
-
-window.termNewOperation = async function() {
-  termState.pin = '';
-  if (!termState.myId) { showTermStep(1); return; }
-  try {
-    await update(ref(db, `${TERM_PATH}/${termState.myId}`), { status: 'waiting', amount: 0, updatedAt: Date.now() });
-    showToast('Готов к новой операции');
-    showTermStep(2);
-    document.getElementById('tIdDisplay').textContent = termState.myId;
-  } catch (e) { showToast('Ошибка: ' + e.message); }
-};
-
-window.termNewId = async function() {
-  if (termState.unsubscribe) { termState.unsubscribe(); termState.unsubscribe = null; }
-  if (termState.myId) {
-    try { await remove(ref(db, `${TERM_PATH}/${termState.myId}`)); } catch (e) {}
-  }
-  localStorage.removeItem(TERM_STORAGE_KEY);
-  termState.myId = null;
-  termState.pin = '';
-  showTermStep(1);
-  document.getElementById('tRestoreBtn').style.display = 'none';
-  showToast('ID сброшен');
-};
-
-window.termBuildPinGrid = function() {
-  const grid = document.getElementById('tPinGrid');
-  grid.innerHTML = '';
-  ['1','2','3','4','5','6','7','8','9','C','0','⌫'].forEach(k => {
-    const b = document.createElement('button');
-    b.textContent = k;
-    b.onclick = () => {
-      if (k === 'C') termState.pin = '';
-      else if (k === '⌫') termState.pin = termState.pin.slice(0, -1);
-      else if (termState.pin.length < 4) termState.pin += k;
-      termUpdatePin();
-    };
-    grid.appendChild(b);
+// ---------- ТАБЫ ----------
+document.querySelectorAll("nav button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    ["patients","doctors","appointment","schedule"].forEach(t=>
+      document.getElementById("tab-"+t).classList.toggle("hidden", t!==btn.dataset.tab));
   });
-  termUpdatePin();
-};
+});
 
-function termUpdatePin() {
-  document.querySelectorAll('#tPinDots .dot').forEach((d, i) => {
-    d.classList.toggle('on', i < termState.pin.length);
+// ---------- ПАЦИЕНТЫ ----------
+const pPolicy=document.getElementById("pPolicy"),
+      pFio=document.getElementById("pFio"),
+      pBirth=document.getElementById("pBirth"),
+      pPhone=document.getElementById("pPhone");
+
+pPhone.addEventListener("input", ()=>{ pPhone.value = fmtPhone(pPhone.value); });
+pPolicy.addEventListener("input", ()=>{ pPolicy.value = fmtPolicy(pPolicy.value); });
+
+function genNumber(){
+  let n;
+  do { n = String(Math.floor(10000 + Math.random()*90000)); }
+  while(state.patients.some(p=>p.num===n));
+  return n;
+}
+
+function addPatient(){
+  const policy = pPolicy.value.replace(/\D/g,"");
+  if(policy.length!==16) return toast("patientMsg","Полис ОМС должен содержать 16 цифр",false);
+  if(!pFio.value.trim() || pFio.value.trim().split(/\s+/).length<2)
+    return toast("patientMsg","Введите фамилию, имя и отчество",false);
+  if(!pBirth.value) return toast("patientMsg","Укажите дату рождения",false);
+  if(pPhone.value.replace(/\D/g,"").length!==11) return toast("patientMsg","Введите телефон полностью",false);
+
+  const patient = {
+    num: genNumber(),
+    policy: policy,
+    fio: pFio.value.trim().replace(/\s+/g," "),
+    birth: pBirth.value,
+    phone: pPhone.value
+  };
+  state.patients.push(patient);
+  save();
+  toast("patientMsg","Пациент зарегистрирован! Номер карты: " + patient.num, true);
+  pPolicy.value=""; pFio.value=""; pBirth.value=""; pPhone.value="";
+  renderPatients(); renderDatalist(); updateStats();
+}
+
+function deletePatient(num){
+  if(!confirm("Удалить пациента №"+num+"?")) return;
+  state.patients = state.patients.filter(p=>p.num!==num);
+  state.appointments = state.appointments.filter(a=>a.num!==num);
+  save(); renderPatients(); renderSchedule(); renderDatalist(); updateStats();
+}
+
+function renderPatients(){
+  const q = document.getElementById("pSearch").value.trim().toLowerCase();
+  const list = state.patients.filter(p=>
+    p.fio.toLowerCase().includes(q) || p.policy.includes(q) || p.num.includes(q));
+  const body = document.getElementById("patientsBody");
+  body.innerHTML = list.map(p=>`
+    <tr>
+      <td><span class="num-badge">№ ${p.num}</span></td>
+      <td><b>${p.fio}</b></td>
+      <td>${p.policy.replace(/(\d{4})(?=\d)/g,"$1 ")}</td>
+      <td>${p.birth.split("-").reverse().join(".")}</td>
+      <td>${p.phone}</td>
+      <td><button class="btn small danger" onclick="deletePatient('${p.num}')">Удалить</button></td>
+    </tr>`).join("");
+  document.getElementById("patientsEmpty").classList.toggle("hidden", list.length>0);
+}
+document.getElementById("pSearch").addEventListener("input", renderPatients);
+
+// ---------- ВРАЧИ ----------
+function renderDoctors(){
+  const icons = {1:"🩺",2:"🔬",3:"❤️",4:"👁️",5:"🦷",6:"🧸",7:"🧠",8:"👂"};
+  document.getElementById("docGrid").innerHTML = doctors.map(d=>`
+    <div class="doc-card">
+      <div class="avatar">${icons[d.id]||"👨‍⚕️"}</div>
+      <h3>${d.name}</h3>
+      <div class="spec">${d.spec} &middot; каб. ${d.cab}</div>
+      <div class="meta">Часы работы: 8:00 – 20:00<br>Обед: ${d.lunch} – ${fmtTime(toMin(d.lunch)+15)}</div>
+    </div>`).join("");
+}
+
+// ---------- СЛОТЫ ----------
+function freeSlots(docId, date){
+  const doc = doctors.find(d=>d.id===docId);
+  const ls = toMin(doc.lunch), le = ls+15;         // обед 15 минут
+  const busy = state.appointments
+    .filter(a=>a.doctorId===docId && a.date===date)
+    .map(a=>a.time);
+  const res=[];
+  // 8:00 + 8k минут: 5 минут приёма + 3 минуты перерыва
+  for(let t=480; t+5<=1200; t+=8){
+    if(!(t+5<=ls || t>=le)) continue;              // слот пересекается с обедом
+    const s = fmtTime(t);
+    if(busy.includes(s)) continue;
+    res.push(s);
+  }
+  return res;
+}
+
+// ---------- ЗАПИСЬ ----------
+const aDoctor=document.getElementById("aDoctor"),
+      aDate=document.getElementById("aDate"),
+      aFio=document.getElementById("aFio"),
+      aNum=document.getElementById("aNum"),
+      aPolicy=document.getElementById("aPolicy"),
+      aBirth=document.getElementById("aBirth"),
+      aPhone=document.getElementById("aPhone"),
+      aTime=document.getElementById("aTime");
+
+function initAppointmentTab(){
+  aDoctor.innerHTML = '<option value="">— выберите врача —</option>' +
+    doctors.map(d=>`<option value="${d.id}">${d.name} — ${d.spec}</option>`).join("");
+  aDate.min = todayStr();
+  aDate.value = todayStr();
+}
+
+aPhone.addEventListener("input", ()=>{ aPhone.value = fmtPhone(aPhone.value); });
+
+function renderDatalist(){
+  document.getElementById("patientsList").innerHTML =
+    state.patients.map(p=>`<option value="${p.fio}">`).join("");
+}
+
+aFio.addEventListener("input", ()=>{
+  const q = aFio.value.trim().toLowerCase();
+  const p = state.patients.find(x=>x.fio.toLowerCase()===q) ||
+            state.patients.find(x=>x.fio.toLowerCase().startsWith(q) && q.length>2);
+  if(p){
+    aNum.value = "№ "+p.num; aPolicy.value = p.policy.replace(/(\d{4})(?=\d)/g,"$1 ");
+    aBirth.value = p.birth.split("-").reverse().join("."); aPhone.value = p.phone;
+    aFio.value = p.fio;
+  } else {
+    aNum.value=""; aPolicy.value=""; aBirth.value=""; aPhone.value="";
+  }
+});
+
+function renderChips(){
+  const box = document.getElementById("timeChips");
+  const note = document.getElementById("lunchNote");
+  if(!aDoctor.value || !aDate.value){
+    box.innerHTML = '<span class="off">Выберите врача и дату</span>';
+    note.textContent = ""; return;
+  }
+  const doc = doctors.find(d=>d.id==aDoctor.value);
+  note.textContent = "(обед врача " + doc.lunch + "–" + fmtTime(toMin(doc.lunch)+15) + ")";
+  const slots = freeSlots(doc.id, aDate.value);
+  if(!slots.length){
+    box.innerHTML = '<span class="off">На эту дату свободного времени нет</span>';
+    aTime.value=""; return;
+  }
+  box.innerHTML = slots.map(s=>`<span onclick="pickTime('${s}',this)">${s}</span>`).join("");
+  aTime.value="";
+}
+function pickTime(t, el){
+  document.querySelectorAll("#timeChips span").forEach(s=>s.classList.remove("sel"));
+  el.classList.add("sel");
+  aTime.value = t;
+}
+
+aDoctor.addEventListener("change", renderChips);
+aDate.addEventListener("change", renderChips);
+
+function makeAppointment(){
+  if(!aDoctor.value) return toast("appMsg","Выберите врача",false);
+  if(!aDate.value)   return toast("appMsg","Выберите дату приёма",false);
+  const p = state.patients.find(x=>"№ "+x.num===aNum.value);
+  if(!p) return toast("appMsg","Пациент с таким ФИО не найден. Сначала зарегистрируйте его на вкладке «Пациенты»",false);
+  if(!aTime.value) return toast("appMsg","Выберите время приёма",false);
+
+  if(!freeSlots(Number(aDoctor.value), aDate.value).includes(aTime.value))
+    return toast("appMsg","Это время уже занято — выберите другое",false);
+
+  const doc = doctors.find(d=>d.id==aDoctor.value);
+  state.appointments.push({
+    id: Date.now(),
+    num: p.num, fio: p.fio,
+    doctorId: doc.id, doctorName: doc.name, spec: doc.spec,
+    date: aDate.value, time: aTime.value
   });
-  document.getElementById('tSubmitBtn').disabled = termState.pin.length !== 4;
+  save();
+  toast("appMsg", p.fio + " записан(а) к " + doc.spec + " — " + doc.name + ", " +
+    aDate.value.split("-").reverse().join(".") + " в " + aTime.value, true);
+  aFio.value=""; aNum.value=""; aPolicy.value=""; aBirth.value=""; aPhone.value=""; aTime.value="";
+  renderChips(); renderSchedule(); updateStats();
 }
 
-window.termSubmitPin = async function() {
-  if (!termState.myId || termState.pin.length !== 4) return;
-  showTermStep(6);
-  try {
-    await new Promise(r => setTimeout(r, 1800));
-    await update(ref(db, `${TERM_PATH}/${termState.myId}`), { status: 'success', updatedAt: Date.now() });
-  } catch (e) {
-    showToast('Ошибка: ' + e.message);
-    showTermStep(5);
-  }
-};
+// ---------- РАСПИСАНИЕ ----------
+function renderSchedule(){
+  const q = document.getElementById("sSearch").value.trim().toLowerCase();
+  const list = state.appointments
+    .filter(a=>a.fio.toLowerCase().includes(q) || a.doctorName.toLowerCase().includes(q) || a.num.includes(q))
+    .slice().sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+  document.getElementById("schedBody").innerHTML = list.map(a=>`
+    <tr>
+      <td>${a.date.split("-").reverse().join(".")}</td>
+      <td><b>${a.time}</b></td>
+      <td>${a.doctorName}<br><span class="hint" style="margin:0">${a.spec}</span></td>
+      <td><b>${a.fio}</b></td>
+      <td><span class="num-badge">№ ${a.num}</span></td>
+      <td><button class="btn small danger" onclick="cancelApp(${a.id})">Отменить</button></td>
+    </tr>`).join("");
+  document.getElementById("schedEmpty").classList.toggle("hidden", list.length>0);
+}
+document.getElementById("sSearch").addEventListener("input", renderSchedule);
 
-window.termCancel = async function() {
-  if (!termState.myId) return;
-  try {
-    await update(ref(db, `${TERM_PATH}/${termState.myId}`), {
-      status: 'fail', reason: 'Отменено клиентом', updatedAt: Date.now()
-    });
-  } catch (e) {}
-};
-
-function initTerminalOnStartup() {
-  const savedId = localStorage.getItem(TERM_STORAGE_KEY);
-  if (savedId) {
-    termState.myId = savedId;
-    document.getElementById('tRestoreBtn').style.display = 'flex';
-    document.getElementById('termSubtitle').textContent = 'Найден сохранённый терминал: ' + savedId;
-    window.termRestore();
-  } else {
-    showTermStep(1);
-    document.getElementById('tRestoreBtn').style.display = 'none';
-  }
+function cancelApp(id){
+  if(!confirm("Отменить запись?")) return;
+  state.appointments = state.appointments.filter(a=>a.id!==id);
+  save(); renderSchedule(); renderChips(); updateStats();
 }
 
-// ==================== КАССА ====================
-const cashState = {
-  products: [],
-  cart: [],
-  termId: localStorage.getItem('terminal_id') || '',
-  termStatus: 'disconnected',
-  termData: null,
-  unsubscribe: null,
-  payMethod: null,
-};
-
-function loadProducts() {
-  try {
-    const saved = JSON.parse(localStorage.getItem('products_v6'));
-    if (saved && saved.length) cashState.products = saved;
-    else {
-      cashState.products = [
-        { barcode: '4600001', name: 'Молоко', price: 89.90 },
-        { barcode: '4600002', name: 'Хлеб', price: 54.50 },
-        { barcode: '4600003', name: 'Кола', price: 95.00 },
-        { barcode: '4600004', name: 'Шоколад', price: 119.99 },
-      ];
-      saveProducts();
-    }
-  } catch (e) { cashState.products = []; }
+// ---------- СТАТИСТИКА ----------
+function updateStats(){
+  document.getElementById("statPatients").textContent = state.patients.length;
+  document.getElementById("statDoctors").textContent = doctors.length;
+  document.getElementById("statApps").textContent = state.appointments.length;
 }
 
-function saveProducts() { localStorage.setItem('products_v6', JSON.stringify(cashState.products)); }
-
-window.addProduct = function() {
-  const barcode = document.getElementById('newBarcode').value.trim();
-  const name = document.getElementById('newName').value.trim();
-  const price = parseFloat(document.getElementById('newPrice').value);
-  if (!barcode || !name || isNaN(price) || price <= 0) { showToast('Заполните все поля'); return; }
-  if (cashState.products.find(p => p.barcode === barcode)) { showToast('Штрихкод уже есть'); return; }
-  cashState.products.push({ barcode, name, price });
-  saveProducts();
-  renderProducts();
-  document.getElementById('newBarcode').value = '';
-  document.getElementById('newName').value = '';
-  document.getElementById('newPrice').value = '';
-  showToast('Товар добавлен');
-};
-
-window.deleteProduct = function(barcode) {
-  if (!confirm('Удалить товар?')) return;
-  cashState.products = cashState.products.filter(p => p.barcode !== barcode);
-  saveProducts();
-  renderProducts();
-};
-
-function renderProducts() {
-  const grid = document.getElementById('productsList');
-  if (!cashState.products.length) { grid.innerHTML = '<div style="color:#94a3b8;padding:20px;">Товаров нет</div>'; return; }
-  grid.innerHTML = cashState.products.map(p => `
-    <div class="product-card">
-      <div class="name">${p.name}</div>
-      <div class="price">${p.price.toFixed(2)} ₽</div>
-      <div class="barcode">${p.barcode}</div>
-      <button class="cashier-btn danger" style="margin-top:8px;padding:4px 10px;font-size:12px;" onclick="deleteProduct('${p.barcode}')">Удалить</button>
-    </div>
-  `).join('');
-}
-
-// ==================== СКАНИРОВАНИЕ ====================
-window.addByBarcode = function() {
-  const q = document.getElementById('barcodeInput').value.trim();
-  if (!q) return;
-
-  // ==== ПРОВЕРКА КОДА ОТМЕНЫ ====
-  if (q.toUpperCase() === CANCEL_CODE) {
-    document.getElementById('barcodeInput').value = '';
-    document.getElementById('qtyInput').value = 1;
-    openCancelModal();
-    return;
-  }
-
-  const qty = parseInt(document.getElementById('qtyInput').value) || 1;
-  const product = cashState.products.find(p => p.barcode === q || p.name.toLowerCase().includes(q.toLowerCase()));
-  if (!product) { showToast('Товар не найден: ' + q); return; }
-  const existing = cashState.cart.find(c => c.barcode === product.barcode);
-  if (existing) existing.qty += qty;
-  else cashState.cart.push({ ...product, qty });
-  document.getElementById('barcodeInput').value = '';
-  document.getElementById('qtyInput').value = 1;
-  renderCart();
-  showToast('Добавлено: ' + product.name);
-};
-
-window.removeFromCart = function(barcode) {
-  cashState.cart = cashState.cart.filter(c => c.barcode !== barcode);
-  renderCart();
-};
-
-window.clearCart = function() { cashState.cart = []; renderCart(); };
-
-function renderCart() {
-  const body = document.getElementById('cartBody');
-  if (!cashState.cart.length) {
-    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">Пусто</td></tr>';
-    document.getElementById('cartTotal').textContent = '0.00 ₽';
-    return;
-  }
-  let total = 0;
-  body.innerHTML = cashState.cart.map(item => {
-    const sum = item.price * item.qty;
-    total += sum;
-    return `<tr>
-      <td>${item.name}</td>
-      <td>${item.price.toFixed(2)} ₽</td>
-      <td>${item.qty}</td>
-      <td>${sum.toFixed(2)} ₽</td>
-      <td><button class="cashier-btn danger" style="padding:4px 10px;font-size:12px;" onclick="removeFromCart('${item.barcode}')">❌</button></td>
-    </tr>`;
-  }).join('');
-  document.getElementById('cartTotal').textContent = total.toFixed(2) + ' ₽';
-}
-
-function getTotal() { return cashState.cart.reduce((s, i) => s + i.price * i.qty, 0); }
-
-// ==================== ОТМЕНА ТОВАРА ====================
-window.openCancelModal = function() {
-  const select = document.getElementById('cancelProductSelect');
-  const form = document.getElementById('cancelForm');
-  const empty = document.getElementById('cancelEmpty');
-  const confirmBtn = document.getElementById('confirmCancelBtn');
-
-  if (!cashState.cart.length) {
-    form.classList.add('hidden');
-    empty.classList.remove('hidden');
-    confirmBtn.disabled = true;
-    document.getElementById('cancelModal').classList.add('show');
-    return;
-  }
-
-  form.classList.remove('hidden');
-  empty.classList.add('hidden');
-  confirmBtn.disabled = false;
-
-  // Заполняем выпадающий список товарами из корзины
-  select.innerHTML = '';
-  cashState.cart.forEach((item, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = `${item.name} — ${item.qty} шт × ${item.price.toFixed(2)} ₽`;
-    select.appendChild(opt);
-  });
-
-  // Сброс количества и обновление суммы
-  document.getElementById('cancelQuantity').value = 1;
-  updateCancelAmount();
-
-  document.getElementById('cancelModal').classList.add('show');
-};
-
-window.updateCancelAmount = function() {
-  const select = document.getElementById('cancelProductSelect');
-  const qtyInput = document.getElementById('cancelQuantity');
-  const idx = parseInt(select.value);
-
-  if (isNaN(idx) || !cashState.cart[idx]) {
-    document.getElementById('cancelAmount').textContent = '0.00 ₽';
-    document.getElementById('cancelItemInfo').textContent = '—';
-    return;
-  }
-
-  const item = cashState.cart[idx];
-  let qty = parseInt(qtyInput.value) || 1;
-  if (qty < 1) qty = 1;
-  if (qty > item.qty) { qty = item.qty; qtyInput.value = item.qty; }
-  qtyInput.max = item.qty;
-
-  const sum = item.price * qty;
-  document.getElementById('cancelAmount').textContent = sum.toFixed(2) + ' ₽';
-  document.getElementById('cancelItemInfo').textContent =
-    `${item.name} · ${qty} из ${item.qty} шт · по ${item.price.toFixed(2)} ₽`;
-};
-
-window.confirmCancel = function() {
-  const select = document.getElementById('cancelProductSelect');
-  const qtyInput = document.getElementById('cancelQuantity');
-  const idx = parseInt(select.value);
-
-  if (isNaN(idx) || !cashState.cart[idx]) { showToast('Товар не выбран'); return; }
-
-  const item = cashState.cart[idx];
-  let qty = parseInt(qtyInput.value) || 1;
-  if (qty < 1) qty = 1;
-  if (qty > item.qty) qty = item.qty;
-
-  const refundSum = item.price * qty;
-
-  if (qty >= item.qty) {
-    // Отменяем весь товар
-    cashState.cart.splice(idx, 1);
-    showToast(`🔄 Отменён: ${item.name} (${refundSum.toFixed(2)} ₽)`);
-  } else {
-    // Частичная отмена
-    item.qty -= qty;
-    showToast(`🔄 Отменено ${qty} шт: ${item.name} (${refundSum.toFixed(2)} ₽)`);
-  }
-
-  renderCart();
-  closeCancelModal();
-};
-
-window.closeCancelModal = function() {
-  document.getElementById('cancelModal').classList.remove('show');
-};
-
-// ==================== ОПЛАТА ====================
-window.openPayModal = function(method) {
-  if (!cashState.cart.length) { showToast('Корзина пуста'); return; }
-  cashState.payMethod = method;
-  document.getElementById('payModal').classList.add('show');
-  document.getElementById('payTitle').textContent = method === 'cash' ? '💵 Оплата наличными' : '💳 Оплата картой';
-  document.getElementById('payCashBlock').classList.toggle('hidden', method !== 'cash');
-  document.getElementById('payCardBlock').classList.toggle('hidden', method !== 'card');
-  document.getElementById('payWaitBlock').classList.add('hidden');
-  document.getElementById('payConfirmBtn').classList.remove('hidden');
-  document.getElementById('payConfirmBtn').disabled = false;
-  if (method === 'cash') {
-    document.getElementById('cashGiven').value = '';
-    document.getElementById('changeVal').textContent = '—';
-    document.getElementById('cashGiven').focus();
-  }
-};
-
-window.closePayModal = function() {
-  document.getElementById('payModal').classList.remove('show');
-};
-
-window.calcChange = function() {
-  const total = getTotal();
-  const given = parseFloat(document.getElementById('cashGiven').value) || 0;
-  document.getElementById('changeVal').textContent = given >= total ? (given - total).toFixed(2) + ' ₽' : 'Недостаточно';
-};
-
-window.confirmPayment = async function() {
-  if (cashState.payMethod === 'cash') {
-    const total = getTotal();
-    const given = parseFloat(document.getElementById('cashGiven').value) || 0;
-    if (given < total) { showToast('Недостаточно средств'); return; }
-    finishSale('Наличные');
-    closePayModal();
-  } else {
-    if (!cashState.termId) { showToast('Терминал не настроен'); return; }
-    if (!cashState.termData || cashState.termData.status !== 'waiting') {
-      showToast('Терминал занят'); return;
-    }
-    const total = getTotal();
-    document.getElementById('payConfirmBtn').classList.add('hidden');
-    document.getElementById('payWaitBlock').classList.remove('hidden');
-    document.getElementById('payWaitText').textContent = 'Отправка на терминал...';
-    try {
-      const needsPin = total > PIN_THRESHOLD;
-      if (needsPin) {
-        await update(ref(db, `${TERM_PATH}/${cashState.termId}`), {
-          status: 'waiting_pin', amount: total, updatedAt: Date.now()
-        });
-        document.getElementById('payWaitText').textContent = 'Ожидание PIN от клиента...';
-      } else {
-        await update(ref(db, `${TERM_PATH}/${cashState.termId}`), {
-          status: 'success', amount: total, updatedAt: Date.now()
-        });
-        setTimeout(() => { finishSale('Карта'); closePayModal(); }, 500);
-      }
-    } catch (e) {
-      showToast('Ошибка: ' + e.message);
-      closePayModal();
-    }
-  }
-};
-
-function finishSale(method) {
-  const total = getTotal();
-  cashState.cart = [];
-  renderCart();
-  showToast(`✅ Оплачено ${total.toFixed(2)} ₽ (${method})`);
-}
-
-// ==================== ТЕРМИНАЛ НА КАССЕ ====================
-function updateTermBar() {
-  const bar = document.getElementById('termBar');
-  if (!cashState.termId) {
-    bar.className = 'terminal-bar wait';
-    bar.textContent = '📟 Терминал не настроен';
-  } else if (cashState.termStatus === 'waiting') {
-    bar.className = 'terminal-bar ok';
-    bar.textContent = `📟 Терминал ${cashState.termId} готов`;
-  } else if (cashState.termStatus === 'busy') {
-    bar.className = 'terminal-bar err';
-    bar.textContent = `📟 Терминал ${cashState.termId} занят`;
-  } else {
-    bar.className = 'terminal-bar wait';
-    bar.textContent = `📟 Терминал ${cashState.termId} — нет связи`;
-  }
-}
-
-window.saveTerminalId = async function() {
-  const id = document.getElementById('termIdInput').value.trim();
-  if (id.length !== 4) { showToast('Введите 4-значный ID'); return; }
-  try {
-    const snap = await get(ref(db, `${TERM_PATH}/${id}`));
-    if (!snap.exists()) { showToast('Терминал не найден'); return; }
-    cashState.termId = id;
-    localStorage.setItem('terminal_id', id);
-    cashSubscribe(id);
-    showToast('Терминал сохранён: ' + id);
-    updateTermBar();
-  } catch (e) { showToast('Ошибка: ' + e.message); }
-};
-
-window.forgetTerminal = function() {
-  if (!confirm('Забыть терминал?')) return;
-  if (cashState.unsubscribe) { cashState.unsubscribe(); cashState.unsubscribe = null; }
-  cashState.termId = '';
-  cashState.termData = null;
-  cashState.termStatus = 'disconnected';
-  localStorage.removeItem('terminal_id');
-  document.getElementById('termIdInput').value = '';
-  updateTermBar();
-  showToast('Терминал забыт');
-};
-
-function cashSubscribe(id) {
-  if (cashState.unsubscribe) cashState.unsubscribe();
-  cashState.unsubscribe = onValue(ref(db, `${TERM_PATH}/${id}`), (snap) => {
-    const data = snap.val();
-    cashState.termData = data;
-    if (!data) cashState.termStatus = 'disconnected';
-    else if (data.status === 'waiting') cashState.termStatus = 'waiting';
-    else if (data.status === 'disconnected') cashState.termStatus = 'disconnected';
-    else cashState.termStatus = 'busy';
-    updateTermBar();
-
-    if (document.getElementById('payModal').classList.contains('show') && cashState.payMethod === 'card' && data) {
-      if (data.status === 'waiting_pin') {
-        document.getElementById('payWaitText').textContent = 'Ожидание PIN от клиента...';
-      } else if (data.status === 'success') {
-        document.getElementById('payWaitText').textContent = '✅ Успешно!';
-        setTimeout(() => { finishSale('Карта'); closePayModal(); }, 1000);
-      } else if (data.status === 'fail') {
-        document.getElementById('payWaitText').textContent = '❌ Отказ';
-        setTimeout(() => { closePayModal(); showToast('Оплата отклонена'); }, 1500);
-      }
-    }
-  }, (e) => console.error('cash sub', e));
-}
-
-window.switchCashierTab = function(tab) {
-  document.querySelectorAll('.cashier-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  document.getElementById('tab-sale').classList.toggle('hidden', tab !== 'sale');
-  document.getElementById('tab-products').classList.toggle('hidden', tab !== 'products');
-  document.getElementById('tab-terminal').classList.toggle('hidden', tab !== 'terminal');
-};
-
-// ==================== СТАРТ ====================
-if (ROLE === 'terminal') {
-  document.getElementById('terminalApp').classList.remove('hidden');
-  document.getElementById('cashierApp').classList.add('hidden');
-  initTerminalOnStartup();
-} else {
-  document.getElementById('terminalApp').classList.add('hidden');
-  document.getElementById('cashierApp').classList.remove('hidden');
-  loadProducts();
-  renderProducts();
-  renderCart();
-  updateTermBar();
-  document.getElementById('termIdInput').value = cashState.termId;
-  if (cashState.termId) cashSubscribe(cashState.termId);
-}
+// ---------- СТАРТ ----------
+renderPatients();
+renderDoctors();
+initAppointmentTab();
+renderDatalist();
+renderSchedule();
+renderChips();
+updateStats();
 </script>
 </body>
 </html>
