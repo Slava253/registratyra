@@ -9,37 +9,48 @@
 <style>
   :root{
     --accent:#2f6fed; --accent-dark:#1e56c8; --bg1:#eef3ff; --bg2:#e6fbf7;
-    --card:#ffffff; --text:#1c2333; --muted:#6b7590; --line:#e4e9f5;
+    --card:#fff; --text:#1c2333; --muted:#6b7590; --line:#e4e9f5;
     --danger:#e5484d; --ok:#1a9e6c; --radius:16px;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     font-family:"Segoe UI", system-ui, -apple-system, sans-serif;
-    color:var(--text);
+    color:var(--text); min-height:100vh;
     background:linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
-    min-height:100vh;
   }
-  .wrap{max-width:1020px; margin:0 auto; padding:24px 16px 60px;}
+  .wrap{max-width:1060px; margin:0 auto; padding:24px 16px 60px;}
 
   header{
     background:linear-gradient(120deg,#2f6fed,#2fb9a8);
     color:#fff; border-radius:var(--radius); padding:26px 28px;
-    display:flex; align-items:center; gap:18px; box-shadow:0 10px 30px rgba(47,111,237,.25);
+    display:flex; align-items:center; gap:18px;
+    box-shadow:0 10px 30px rgba(47,111,237,.25);
     margin-bottom:22px;
   }
-  .logo{width:56px; height:56px; border-radius:16px; background:rgba(255,255,255,.18);
-    display:flex; align-items:center; justify-content:center; font-size:30px; flex:none;}
+  .logo{width:60px; height:60px; border-radius:16px; background:rgba(255,255,255,.18);
+    display:flex; align-items:center; justify-content:center; font-size:32px; flex:none;}
   header h1{font-size:24px; font-weight:700;}
-  header p{opacity:.85; font-size:14px; margin-top:4px;}
+  header p{opacity:.9; font-size:13.5px; margin-top:6px; line-height:1.5;}
+
+  .stat-row{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:22px;}
+  .stat{flex:1; min-width:150px; background:#fff; border-radius:var(--radius);
+    padding:18px 20px; box-shadow:0 6px 24px rgba(28,35,51,.07); position:relative; overflow:hidden;}
+  .stat::after{content:""; position:absolute; right:-20px; bottom:-20px; width:70px; height:70px;
+    border-radius:50%; background:linear-gradient(135deg,rgba(47,111,237,.12),rgba(47,185,168,.12));}
+  .stat b{font-size:28px; display:block; color:var(--accent-dark);}
+  .stat span{font-size:13px; color:var(--muted); font-weight:500;}
 
   nav{display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap;}
   nav button{
-    border:none; background:#fff; color:var(--muted); padding:11px 20px; border-radius:999px;
-    font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(28,35,51,.06);
-    transition:.2s;
+    border:none; background:#fff; color:var(--muted);
+    padding:11px 20px; border-radius:999px;
+    font-size:15px; font-weight:600; cursor:pointer;
+    box-shadow:0 2px 8px rgba(28,35,51,.06);
+    transition:.2s; font-family:inherit;
   }
-  nav button:hover{color:var(--accent);}
-  nav button.active{background:var(--accent); color:#fff; box-shadow:0 6px 16px rgba(47,111,237,.35);}
+  nav button:hover{color:var(--accent); transform:translateY(-1px);}
+  nav button.active{background:var(--accent); color:#fff;
+    box-shadow:0 6px 16px rgba(47,111,237,.35);}
 
   .card{background:var(--card); border-radius:var(--radius); padding:24px;
     box-shadow:0 6px 24px rgba(28,35,51,.07); margin-bottom:22px;}
@@ -49,18 +60,16 @@
   label{display:block; font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px;}
   input, select{
     width:100%; padding:11px 14px; border:1.5px solid var(--line); border-radius:12px;
-    font-size:15px; background:#fbfcff; outline:none; transition:.2s; color:var(--text);
+    font-size:15px; background:#fbfcff; outline:none; transition:.2s;
+    color:var(--text); font-family:inherit;
   }
   input:focus, select:focus{border-color:var(--accent); background:#fff;
     box-shadow:0 0 0 4px rgba(47,111,237,.12);}
   input[readonly]{background:#f1f4fb; color:#3c4b6b;}
-  .btn{
-    border:none; border-radius:12px; padding:12px 22px; font-size:15px; font-weight:600;
-    cursor:pointer; transition:.2s; background:var(--accent); color:#fff;
-  }
+
+  .btn{border:none; border-radius:12px; padding:12px 22px; font-size:15px; font-weight:600;
+    cursor:pointer; transition:.2s; background:var(--accent); color:#fff; font-family:inherit;}
   .btn:hover{background:var(--accent-dark); transform:translateY(-1px);}
-  .btn.gray{background:#eef1f8; color:var(--text);}
-  .btn.gray:hover{background:#e2e7f2;}
   .btn.danger{background:#fdeaea; color:var(--danger);}
   .btn.danger:hover{background:#fbdcdc;}
   .btn.small{padding:7px 14px; font-size:13px; border-radius:9px;}
@@ -71,8 +80,8 @@
   .msg.err{background:#fdeaea; color:var(--danger); display:block;}
 
   table{width:100%; border-collapse:collapse; font-size:14px;}
-  th{ text-align:left; color:var(--muted); font-size:12px; text-transform:uppercase;
-      letter-spacing:.4px; padding:10px 12px; border-bottom:2px solid var(--line);}
+  th{text-align:left; color:var(--muted); font-size:12px; text-transform:uppercase;
+    letter-spacing:.4px; padding:10px 12px; border-bottom:2px solid var(--line);}
   td{padding:12px; border-bottom:1px solid var(--line); vertical-align:middle;}
   tr:last-child td{border-bottom:none;}
   tbody tr:hover{background:#f7f9ff;}
@@ -80,36 +89,37 @@
     font-weight:700; padding:3px 10px; border-radius:8px; font-size:13px; letter-spacing:.5px;}
   .scroll-x{overflow-x:auto;}
 
-  .doc-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;}
+  .doc-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px;}
   .doc-card{border:1.5px solid var(--line); border-radius:14px; padding:18px; transition:.2s;}
-  .doc-card:hover{border-color:var(--accent); box-shadow:0 8px 20px rgba(47,111,237,.12);}
-  .doc-card .avatar{width:44px; height:44px; border-radius:12px; display:flex; align-items:center;
-    justify-content:center; font-size:22px; background:#eaf1ff; margin-bottom:10px;}
+  .doc-card:hover{border-color:var(--accent); box-shadow:0 8px 20px rgba(47,111,237,.12);
+    transform:translateY(-2px);}
+  .doc-card .avatar{width:46px; height:46px; border-radius:12px; display:flex;
+    align-items:center; justify-content:center; font-size:24px; background:#eaf1ff; margin-bottom:10px;}
   .doc-card h3{font-size:15px; margin-bottom:4px;}
   .doc-card .spec{color:var(--accent); font-weight:600; font-size:13px; margin-bottom:8px;}
-  .doc-card .meta{font-size:13px; color:var(--muted); line-height:1.6;}
+  .doc-card .meta{font-size:13px; color:var(--muted); line-height:1.65;}
 
   .times{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
-  .times span{
-    padding:8px 12px; border-radius:9px; border:1.5px solid var(--line); font-size:13px;
-    font-weight:600; cursor:pointer; transition:.15s; background:#fbfcff;
-  }
-  .times span:hover{border-color:var(--accent); color:var(--accent);}
+  .times span{padding:8px 12px; border-radius:9px; border:1.5px solid var(--line);
+    font-size:13px; font-weight:600; cursor:pointer; transition:.15s;
+    background:#fbfcff; user-select:none;}
+  .times span:hover:not(.off){border-color:var(--accent); color:var(--accent);}
   .times span.sel{background:var(--accent); border-color:var(--accent); color:#fff;}
   .times span.off{opacity:.35; cursor:not-allowed;}
 
-  .empty{text-align:center; color:var(--muted); padding:28px 10px; font-size:14px;}
+  .empty{text-align:center; color:var(--muted); padding:32px 10px; font-size:14px;}
   .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
   .hidden{display:none!important;}
-  .stat-row{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:22px;}
-  .stat{flex:1; min-width:150px; background:#fff; border-radius:var(--radius); padding:16px 20px;
-    box-shadow:0 6px 24px rgba(28,35,51,.07);}
-  .stat b{font-size:26px; display:block;}
-  .stat span{font-size:13px; color:var(--muted);}
   .conn-dot{display:inline-block; width:9px; height:9px; border-radius:50%;
-    background:#f59e0b; margin-right:6px; transition:.2s;}
+    background:#f59e0b; margin-right:6px;}
   .conn-dot.ok{background:#22c55e;}
   .conn-dot.err{background:#ef4444;}
+
+  @media (max-width:540px){
+    header{padding:20px; gap:14px;} header h1{font-size:20px;}
+    .logo{width:48px; height:48px; font-size:26px;}
+    .card{padding:18px;} .stat b{font-size:24px;}
+  }
 </style>
 </head>
 <body>
@@ -119,7 +129,7 @@
     <div class="logo">🏥</div>
     <div>
       <h1>Регистратура поликлиники</h1>
-      <p>Приём пациентов с 8:00 до 20:00 &middot; приём 5 минут, перерыв 3 минуты &middot; обед 15 минут
+      <p>Приём с 8:00 до 20:00 &middot; приём 5 мин + перерыв 3 мин &middot; обед врача 15 мин (12:00–13:00)
          &middot; <span class="conn-dot" id="connDot"></span><span id="connLabel">подключение…</span></p>
     </div>
   </header>
@@ -143,14 +153,18 @@
       <h2>➕ Добавить пациента</h2>
       <div id="patientMsg" class="msg"></div>
       <div class="grid">
-        <div><label>Полис ОМС (16 цифр)</label><input id="pPolicy" maxlength="19" placeholder="0000 0000 0000 0000"></div>
-        <div><label>ФИО</label><input id="pFio" placeholder="Иванов Иван Иванович"></div>
-        <div><label>Дата рождения</label><input id="pBirth" type="date"></div>
-        <div><label>Телефон</label><input id="pPhone" maxlength="18" placeholder="+7 (___) ___-__-__"></div>
+        <div><label>Полис ОМС (16 цифр)</label>
+          <input id="pPolicy" maxlength="19" placeholder="0000 0000 0000 0000"></div>
+        <div><label>ФИО</label>
+          <input id="pFio" placeholder="Иванов Иван Иванович"></div>
+        <div><label>Дата рождения</label>
+          <input id="pBirth" type="date"></div>
+        <div><label>Телефон</label>
+          <input id="pPhone" maxlength="18" placeholder="+7 (___) ___-__-__"></div>
       </div>
       <div class="row" style="margin-top:16px">
         <button class="btn" onclick="addPatient()">Зарегистрировать пациента</button>
-        <span class="hint" id="numPreview">Номер карты будет присвоен автоматически</span>
+        <span class="hint">Номер карты (5 цифр) присваивается автоматически</span>
       </div>
     </div>
 
@@ -159,7 +173,8 @@
       <input id="pSearch" placeholder="Поиск по ФИО, полису или номеру…" style="margin-bottom:14px">
       <div class="scroll-x">
         <table>
-          <thead><tr><th>Номер карты</th><th>ФИО</th><th>Полис ОМС</th><th>Дата рождения</th><th>Телефон</th><th></th></tr></thead>
+          <thead><tr><th>Номер</th><th>ФИО</th><th>Полис ОМС</th>
+            <th>Дата рождения</th><th>Телефон</th><th></th></tr></thead>
           <tbody id="patientsBody"></tbody>
         </table>
       </div>
@@ -172,8 +187,8 @@
     <div class="card">
       <h2>🩺 Наши специалисты</h2>
       <p class="hint" style="margin-top:-8px; margin-bottom:16px">
-        Все врачи ведут приём с 8:00 до 20:00. Приём длится 5 минут, между пациентами перерыв 3 минуты.
-        Время обеда у каждого врача своё — ровно 15 минут в интервале с 12:00 до 13:00.
+        Все врачи ведут приём с 8:00 до 20:00. Приём — 5 минут, перерыв — 3 минуты.
+        У каждого свой обед — 15 минут в интервале с 12:00 до 13:00.
       </p>
       <div class="doc-grid" id="docGrid"></div>
     </div>
@@ -184,24 +199,31 @@
     <div class="card">
       <h2>📅 Новая запись к врачу</h2>
       <div id="appMsg" class="msg"></div>
+
       <div class="grid">
-        <div>
-          <label>Врач</label>
-          <select id="aDoctor"></select>
-        </div>
-        <div>
-          <label>Дата приёма</label>
-          <input id="aDate" type="date">
-        </div>
+        <div><label>Врач</label>
+          <select id="aDoctor"></select></div>
+        <div><label>Дата приёма</label>
+          <input id="aDate" type="date"></div>
       </div>
+
       <div class="grid" style="margin-top:14px">
         <div>
-          <label>ФИО пациента <span style="color:var(--accent)">(начните вводить — данные подставятся сами)</span></label>
+          <label>ФИО пациента <span style="color:var(--accent);font-weight:500">(начните вводить — данные подставятся)</span></label>
           <input id="aFio" list="patientsList" placeholder="Иванов Иван Иванович" autocomplete="off">
           <datalist id="patientsList"></datalist>
         </div>
         <div>
-          <label>Причина приёма</label>
+          <label>Номер пациента <span style="color:var(--accent);font-weight:500">(5 цифр — данные подставятся)</span></label>
+          <input id="aNum" inputmode="numeric" maxlength="5" placeholder="12345" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:14px">
+        <div><label>Полис ОМС</label><input id="aPolicy" readonly></div>
+        <div><label>Дата рождения</label><input id="aBirth" readonly></div>
+        <div><label>Телефон</label><input id="aPhone" readonly></div>
+        <div><label>Причина приёма</label>
           <select id="aReason">
             <option>Первичный осмотр</option>
             <option>Повторный приём</option>
@@ -214,20 +236,14 @@
           </select>
         </div>
       </div>
-      <div class="grid" style="margin-top:14px">
-        <div><label>Номер пациента</label><input id="aNum" readonly></div>
-        <div><label>Полис ОМС</label><input id="aPolicy" readonly></div>
-        <div><label>Дата рождения</label><input id="aBirth" readonly></div>
-        <div><label>Телефон</label><input id="aPhone" readonly></div>
-      </div>
 
       <div style="margin-top:18px">
-        <label>Свободное время приёма <span id="lunchNote" class="hint" style="display:inline; margin:0"></span></label>
+        <label>Свободное время приёма
+          <span id="lunchNote" class="hint" style="display:inline; margin:0"></span></label>
         <div class="times" id="timeChips"><span class="off">Выберите врача и дату</span></div>
-        <input id="aTime" class="hidden">
       </div>
 
-      <div style="margin-top:18px">
+      <div style="margin-top:20px">
         <button class="btn" onclick="makeAppointment()">Записать пациента</button>
       </div>
     </div>
@@ -240,7 +256,8 @@
       <input id="sSearch" placeholder="Поиск по ФИО, врачу или номеру пациента…" style="margin-bottom:14px">
       <div class="scroll-x">
         <table>
-          <thead><tr><th>Дата</th><th>Время</th><th>Врач</th><th>Пациент</th><th>Номер</th><th></th></tr></thead>
+          <thead><tr><th>Дата</th><th>Время</th><th>Врач</th>
+            <th>Пациент</th><th>Номер</th><th></th></tr></thead>
           <tbody id="schedBody"></tbody>
         </table>
       </div>
@@ -267,17 +284,16 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 /* Индикатор соединения */
-const connDot = document.getElementById('connDot');
+const connDot   = document.getElementById('connDot');
 const connLabel = document.getElementById('connLabel');
 db.ref('.info/connected').on('value', s=>{
   const ok = s.val() === true;
   connDot.className = 'conn-dot ' + (ok ? 'ok' : 'err');
-  connLabel.textContent = ok ? 'Firebase подключён' : 'нет соединения с Firebase';
+  connLabel.textContent = ok ? 'Firebase подключён' : 'нет соединения';
 });
 
 /* ============================================================
-   СПРАВОЧНИК ВРАЧЕЙ (синхронизирован с vrach.html)
-   lunch — время начала обеда в минутах от 00:00, обед 15 мин.
+   СПРАВОЧНИК ВРАЧЕЙ (совпадает с vrach.html)
 ============================================================ */
 const DOCTORS = [
   {id:'d1',  name:'Иванов Алексей Петрович',    spec:'Терапевт',            room:'101', lunch:720},
@@ -293,105 +309,113 @@ const DOCTORS = [
   {id:'d11', name:'Зайцев Роман Витальевич',    spec:'Дерматолог',          room:'111', lunch:760},
   {id:'d12', name:'Киселёва Дарья Романовна',   spec:'Гинеколог',           room:'112', lunch:764}
 ];
-const APPT_START = 8*60, APPT_END = 20*60, APPT_LEN = 5, STEP = 8, LUNCH_LEN = 15;
+const APPT_START = 8*60, APPT_END = 20*60;
+const APPT_LEN = 5, BREAK_LEN = 3, STEP = APPT_LEN + BREAK_LEN, LUNCH_LEN = 15;
 
 /* ============================================================
-   СОСТОЯНИЕ (наполняется слушателями Firebase)
+   СОСТОЯНИЕ
 ============================================================ */
 let state = { patients: {}, appointments: {} };
 
 /* ============================================================
    УТИЛИТЫ
 ============================================================ */
-function pad(n){ return String(n).padStart(2,"0"); }
-function fmtTime(t){ return pad(Math.floor(t/60)) + ":" + pad(t%60); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function toast(el, text, ok){
-  const box = document.getElementById(el);
-  box.className = "msg " + (ok ? "ok" : "err");
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtTime(t){ return pad(Math.floor(t/60)) + ':' + pad(t%60); }
+function fmtDate(ds){ return ds ? ds.split('-').reverse().join('.') : ''; }
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function toast(id, text, ok){
+  const box = document.getElementById(id);
+  box.className = 'msg ' + (ok ? 'ok' : 'err');
   box.textContent = text;
-  setTimeout(()=>{ box.className="msg"; }, 4000);
+  clearTimeout(box._t);
+  box._t = setTimeout(()=>{ box.className = 'msg'; }, 4200);
 }
 function fmtPhone(v){
-  let d = v.replace(/\D/g,"");
-  if(d.startsWith("8")) d = "7"+d.slice(1);
-  if(!d.startsWith("7")) d = "7"+d;
+  let d = String(v).replace(/\D/g,'');
+  if(d.startsWith('8')) d = '7' + d.slice(1);
+  if(!d.startsWith('7')) d = '7' + d;
   d = d.slice(0,11);
-  let out = "+7";
-  if(d.length>1) out += " ("+d.slice(1,4);
-  if(d.length>=5) out += ") "+d.slice(4,7);
-  if(d.length>=8) out += "-"+d.slice(7,9);
-  if(d.length>=10) out += "-"+d.slice(9,11);
+  let out = '+7';
+  if(d.length>1) out += ' (' + d.slice(1,4);
+  if(d.length>=5) out += ') ' + d.slice(4,7);
+  if(d.length>=8) out += '-' + d.slice(7,9);
+  if(d.length>=10) out += '-' + d.slice(9,11);
   return out;
 }
 function fmtPolicy(v){
-  let d = v.replace(/\D/g,"").slice(0,16);
-  return d.replace(/(\d{4})(?=\d)/g,"$1 ");
-}
-function fmtDate(ds){ return ds ? ds.split("-").reverse().join(".") : ""; }
-function todayStr(){
-  const d = new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  const d = String(v).replace(/\D/g,'').slice(0,16);
+  return d.replace(/(\d{4})(?=\d)/g,'$1 ');
 }
 
 /* ============================================================
    ТАБЫ
 ============================================================ */
-document.querySelectorAll("nav button").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    ["patients","doctors","appointment","schedule"].forEach(t=>
-      document.getElementById("tab-"+t).classList.toggle("hidden", t!==btn.dataset.tab));
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['patients','doctors','appointment','schedule'].forEach(t=>
+      document.getElementById('tab-'+t).classList.toggle('hidden', t!==btn.dataset.tab));
   });
 });
 
 /* ============================================================
    ПАЦИЕНТЫ
 ============================================================ */
-const pPolicy=document.getElementById("pPolicy"),
-      pFio=document.getElementById("pFio"),
-      pBirth=document.getElementById("pBirth"),
-      pPhone=document.getElementById("pPhone");
+const pPolicy = document.getElementById('pPolicy');
+const pFio    = document.getElementById('pFio');
+const pBirth  = document.getElementById('pBirth');
+const pPhone  = document.getElementById('pPhone');
 
-pPhone.addEventListener("input", ()=>{ pPhone.value = fmtPhone(pPhone.value); });
-pPolicy.addEventListener("input", ()=>{ pPolicy.value = fmtPolicy(pPolicy.value); });
+pPhone.addEventListener('input', ()=>{ pPhone.value = fmtPhone(pPhone.value); });
+pPolicy.addEventListener('input', ()=>{ pPolicy.value = fmtPolicy(pPolicy.value); });
 
 function genCardNumber(){
+  const used = new Set(Object.values(state.patients).map(p=>p.card));
   let n;
   do { n = String(Math.floor(10000 + Math.random()*90000)); }
-  while(Object.values(state.patients).some(p=>p.card===n));
+  while(used.has(n));
   return n;
 }
 
 function addPatient(){
-  const policy = pPolicy.value.replace(/\D/g,"");
-  if(policy.length!==16) return toast("patientMsg","Полис ОМС должен содержать 16 цифр",false);
-  if(!pFio.value.trim() || pFio.value.trim().split(/\s+/).length<2)
-    return toast("patientMsg","Введите фамилию, имя и отчество",false);
-  if(!pBirth.value) return toast("patientMsg","Укажите дату рождения",false);
-  if(pPhone.value.replace(/\D/g,"").length!==11) return toast("patientMsg","Введите телефон полностью",false);
+  const polis = pPolicy.value.replace(/\D/g,'');
+  const fio   = pFio.value.trim().replace(/\s+/g,' ');
+  const birth = pBirth.value;
+  const phone = pPhone.value;
 
-  const patient = {
-    card: genCardNumber(),
-    polis: policy,
-    fio: pFio.value.trim().replace(/\s+/g," "),
-    birth: pBirth.value,
-    phone: pPhone.value
-  };
+  if(polis.length !== 16)
+    return toast('patientMsg','Полис ОМС должен содержать ровно 16 цифр',false);
+  if(!fio || fio.split(' ').length < 2)
+    return toast('patientMsg','Введите фамилию и имя',false);
+  if(!birth)
+    return toast('patientMsg','Укажите дату рождения',false);
+  if(phone.replace(/\D/g,'').length !== 11)
+    return toast('patientMsg','Введите телефон полностью',false);
+  if(Object.values(state.patients).some(p=>p.polis === polis))
+    return toast('patientMsg','Пациент с таким полисом уже есть',false);
+
+  const patient = { card: genCardNumber(), polis, fio, birth, phone };
   db.ref('patients').push(patient).then(()=>{
-    toast("patientMsg","Пациент зарегистрирован! Номер карты: " + patient.card, true);
-    pPolicy.value=""; pFio.value=""; pBirth.value=""; pPhone.value="";
-  }).catch(err=>{
-    toast("patientMsg","Ошибка сохранения: "+err.message, false);
-  });
+    toast('patientMsg','Пациент зарегистрирован! Номер карты: ' + patient.card, true);
+    pPolicy.value=''; pFio.value=''; pBirth.value=''; pPhone.value='';
+  }).catch(err => toast('patientMsg','Ошибка: '+err.message,false));
 }
 
 function deletePatient(patientId, card){
-  if(!confirm("Удалить пациента №"+card+"? Все его записи также будут удалены.")) return;
-  // Удаляем все связанные записи (по patientId и по card — на случай старых записей)
+  if(!confirm('Удалить пациента №'+card+'? Его записи тоже будут удалены.')) return;
   const apptRef = db.ref('appointments');
-  Object.entries(state.appointments).forEach(([id, a])=>{
-    if(a.patientId===patientId || String(a.card)===String(card)){
+  Object.entries(state.appointments).forEach(([id,a])=>{
+    if(a.patientId === patientId || String(a.card) === String(card)){
       apptRef.child(id).remove();
     }
   });
@@ -399,26 +423,25 @@ function deletePatient(patientId, card){
 }
 
 function renderPatients(){
-  const q = document.getElementById("pSearch").value.trim().toLowerCase();
+  const q = document.getElementById('pSearch').value.trim().toLowerCase();
   const list = Object.entries(state.patients)
-    .map(([id, p])=>({id, ...p}))
-    .filter(p=>
+    .map(([id,p])=>({id, ...p}))
+    .filter(p =>
       String(p.fio||'').toLowerCase().includes(q) ||
       String(p.polis||'').includes(q) ||
       String(p.card||'').includes(q));
-  const body = document.getElementById("patientsBody");
-  body.innerHTML = list.map(p=>`
+  document.getElementById('patientsBody').innerHTML = list.map(p=>`
     <tr>
-      <td><span class="num-badge">№ ${esc(p.card||'—')}</span></td>
+      <td><span class="num-badge">№ ${esc(p.card)}</span></td>
       <td><b>${esc(p.fio)}</b></td>
       <td>${esc(fmtPolicy(p.polis||''))}</td>
       <td>${esc(fmtDate(p.birth))}</td>
       <td>${esc(p.phone||'')}</td>
       <td><button class="btn small danger" onclick="deletePatient('${p.id}','${esc(p.card)}')">Удалить</button></td>
-    </tr>`).join("");
-  document.getElementById("patientsEmpty").classList.toggle("hidden", list.length>0);
+    </tr>`).join('');
+  document.getElementById('patientsEmpty').classList.toggle('hidden', list.length>0);
 }
-document.getElementById("pSearch").addEventListener("input", renderPatients);
+document.getElementById('pSearch').addEventListener('input', renderPatients);
 
 /* ============================================================
    ВРАЧИ
@@ -426,31 +449,30 @@ document.getElementById("pSearch").addEventListener("input", renderPatients);
 function renderDoctors(){
   const icons = {d1:'🩺',d2:'🔬',d3:'❤️',d4:'👁️',d5:'🦷',d6:'🧸',
                  d7:'🧠',d8:'👂',d9:'🦴',d10:'⚖️',d11:'🧴',d12:'👶'};
-  document.getElementById("docGrid").innerHTML = DOCTORS.map(d=>`
+  document.getElementById('docGrid').innerHTML = DOCTORS.map(d=>`
     <div class="doc-card">
-      <div class="avatar">${icons[d.id]||"👨‍⚕️"}</div>
+      <div class="avatar">${icons[d.id] || '👨‍⚕️'}</div>
       <h3>${esc(d.name)}</h3>
       <div class="spec">${esc(d.spec)} &middot; каб. ${esc(d.room)}</div>
-      <div class="meta">Часы работы: 8:00 – 20:00<br>
+      <div class="meta">Часы: 8:00 – 20:00<br>
         Обед: ${fmtTime(d.lunch)} – ${fmtTime(d.lunch+LUNCH_LEN)}</div>
-    </div>`).join("");
+    </div>`).join('');
 }
 
 /* ============================================================
-   СЛОТЫ
+   СВОБОДНЫЕ СЛОТЫ
 ============================================================ */
-function freeSlots(docId, date){
+function freeSlots(docId, dateStr){
   const doc = DOCTORS.find(d=>d.id===docId);
   if(!doc) return [];
-  const ls = doc.lunch, le = ls + LUNCH_LEN;
-  const busy = new Set(
-    Object.values(state.appointments)
-      .filter(a=>a.doctorId===docId && a.date===date && a.status!=='cancelled')
-      .map(a=>a.time)
-  );
+  const ls = doc.lunch, le = doc.lunch + LUNCH_LEN;
+  const busy = new Set();
+  Object.values(state.appointments).forEach(a=>{
+    if(a.doctorId===docId && a.date===dateStr && a.status!=='cancelled') busy.add(a.time);
+  });
   const res = [];
-  for(let t=APPT_START; t+APPT_LEN<=APPT_END; t+=STEP){
-    if(t < le && t+APPT_LEN > ls) continue;   // пересекается с обедом
+  for(let t = APPT_START; t + APPT_LEN <= APPT_END; t += STEP){
+    if(t < le && t + APPT_LEN > ls) continue;         // пересекается с обедом
     const s = fmtTime(t);
     if(busy.has(s)) continue;
     res.push(s);
@@ -461,152 +483,169 @@ function freeSlots(docId, date){
 /* ============================================================
    ЗАПИСЬ
 ============================================================ */
-const aDoctor = document.getElementById("aDoctor"),
-      aDate   = document.getElementById("aDate"),
-      aFio    = document.getElementById("aFio"),
-      aNum    = document.getElementById("aNum"),
-      aPolicy = document.getElementById("aPolicy"),
-      aBirth  = document.getElementById("aBirth"),
-      aPhone  = document.getElementById("aPhone"),
-      aReason = document.getElementById("aReason"),
-      aTime   = document.getElementById("aTime");
+const aDoctor = document.getElementById('aDoctor');
+const aDate   = document.getElementById('aDate');
+const aFio    = document.getElementById('aFio');
+const aNum    = document.getElementById('aNum');
+const aPolicy = document.getElementById('aPolicy');
+const aBirth  = document.getElementById('aBirth');
+const aPhone  = document.getElementById('aPhone');
+const aReason = document.getElementById('aReason');
+let aTime = '';
 
 function initAppointmentTab(){
   aDoctor.innerHTML = '<option value="">— выберите врача —</option>' +
-    DOCTORS.map(d=>`<option value="${d.id}">${esc(d.name)} — ${esc(d.spec)}</option>`).join("");
+    DOCTORS.map(d=>`<option value="${d.id}">${esc(d.name)} — ${esc(d.spec)}</option>`).join('');
   aDate.min = todayStr();
   aDate.value = todayStr();
 }
 
 function renderDatalist(){
-  document.getElementById("patientsList").innerHTML =
-    Object.values(state.patients).map(p=>`<option value="${esc(p.fio)}">`).join("");
+  document.getElementById('patientsList').innerHTML =
+    Object.values(state.patients).map(p=>`<option value="${esc(p.fio)}">`).join('');
 }
 
-aFio.addEventListener("input", ()=>{
+let lookupBusy = false;
+function fillPatient(p){
+  lookupBusy = true;
+  aFio.value    = p.fio;
+  aNum.value    = p.card;
+  aPolicy.value = fmtPolicy(p.polis||'');
+  aBirth.value  = fmtDate(p.birth);
+  aPhone.value  = p.phone||'';
+  lookupBusy = false;
+}
+function clearPatientFields(){
+  lookupBusy = true;
+  aFio.value=''; aNum.value=''; aPolicy.value=''; aBirth.value=''; aPhone.value='';
+  lookupBusy = false;
+}
+
+/* Автозаполнение по ФИО */
+aFio.addEventListener('input', ()=>{
+  if(lookupBusy) return;
   const q = aFio.value.trim().toLowerCase();
+  if(!q){ return clearPatientFields(); }
   const entries = Object.values(state.patients);
-  const p = entries.find(x=>String(x.fio||'').toLowerCase()===q) ||
-            (q.length>2 ? entries.find(x=>String(x.fio||'').toLowerCase().startsWith(q)) : null);
-  if(p){
-    aNum.value = "№ "+p.card;
-    aPolicy.value = fmtPolicy(p.polis||'');
-    aBirth.value = fmtDate(p.birth);
-    aPhone.value = p.phone||'';
-    aFio.value = p.fio;
-  } else {
-    aNum.value=""; aPolicy.value=""; aBirth.value=""; aPhone.value="";
+  const p = entries.find(x=>String(x.fio||'').toLowerCase() === q)
+         || (q.length > 2 ? entries.find(x=>String(x.fio||'').toLowerCase().startsWith(q)) : null);
+  if(p){ fillPatient(p); }
+  else {
+    aNum.value=''; aPolicy.value=''; aBirth.value=''; aPhone.value='';
+  }
+});
+
+/* Автозаполнение по номеру пациента (5 цифр) */
+aNum.addEventListener('input', ()=>{
+  if(lookupBusy) return;
+  aNum.value = aNum.value.replace(/\D/g,'').slice(0,5);
+  const code = aNum.value;
+  if(!code){
+    aFio.value=''; aPolicy.value=''; aBirth.value=''; aPhone.value='';
+    return;
+  }
+  const p = Object.values(state.patients).find(x=>String(x.card) === code);
+  if(p){ fillPatient(p); }
+  else {
+    aFio.value=''; aPolicy.value=''; aBirth.value=''; aPhone.value='';
   }
 });
 
 function renderChips(){
-  const box = document.getElementById("timeChips");
-  const note = document.getElementById("lunchNote");
+  const box  = document.getElementById('timeChips');
+  const note = document.getElementById('lunchNote');
   if(!aDoctor.value || !aDate.value){
     box.innerHTML = '<span class="off">Выберите врача и дату</span>';
-    note.textContent = ""; return;
+    note.textContent = ''; aTime=''; return;
   }
   const doc = DOCTORS.find(d=>d.id===aDoctor.value);
-  note.textContent = "(обед врача " + fmtTime(doc.lunch) + "–" + fmtTime(doc.lunch+LUNCH_LEN) + ")";
+  note.textContent = '(обед врача ' + fmtTime(doc.lunch) + '–' + fmtTime(doc.lunch+LUNCH_LEN) + ')';
   const slots = freeSlots(doc.id, aDate.value);
   if(!slots.length){
     box.innerHTML = '<span class="off">На эту дату свободного времени нет</span>';
-    aTime.value=""; return;
+    aTime=''; return;
   }
-  // сохраняем выбор пользователя, если он ещё валиден
-  const prev = aTime.value;
   box.innerHTML = slots.map(s=>
-    `<span class="${s===prev?'sel':''}" onclick="pickTime('${s}',this)">${s}</span>`
-  ).join("");
-  if(!slots.includes(prev)) aTime.value = "";
+    `<span class="${s===aTime?'sel':''}" onclick="pickTime('${s}',this)">${s}</span>`
+  ).join('');
+  if(!slots.includes(aTime)) aTime = '';
 }
 function pickTime(t, el){
-  document.querySelectorAll("#timeChips span").forEach(s=>s.classList.remove("sel"));
-  el.classList.add("sel");
-  aTime.value = t;
+  document.querySelectorAll('#timeChips span').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');
+  aTime = t;
 }
-
-aDoctor.addEventListener("change", renderChips);
-aDate.addEventListener("change", renderChips);
+aDoctor.addEventListener('change', renderChips);
+aDate.addEventListener('change', renderChips);
 
 function makeAppointment(){
-  if(!aDoctor.value) return toast("appMsg","Выберите врача",false);
-  if(!aDate.value)   return toast("appMsg","Выберите дату приёма",false);
+  if(!aDoctor.value) return toast('appMsg','Выберите врача',false);
+  if(!aDate.value)   return toast('appMsg','Выберите дату',false);
 
-  const card = aNum.value.replace(/^№\s*/, '').trim();
-  const patientEntry = Object.entries(state.patients)
-    .find(([k,p])=>String(p.card)===card);
-  if(!patientEntry)
-    return toast("appMsg","Пациент с таким ФИО не найден. Сначала зарегистрируйте его на вкладке «Пациенты»",false);
-  const [patientId, p] = patientEntry;
+  const code = aNum.value.trim();
+  const entry = Object.entries(state.patients).find(([k,p])=>String(p.card) === code);
+  if(!entry)
+    return toast('appMsg','Пациент не найден. Введите ФИО или номер карты — или зарегистрируйте его на вкладке «Пациенты».',false);
+  const [patientId, p] = entry;
 
-  if(!aTime.value) return toast("appMsg","Выберите время приёма",false);
-
-  if(!freeSlots(aDoctor.value, aDate.value).includes(aTime.value))
-    return toast("appMsg","Это время уже занято — выберите другое",false);
+  if(!aTime) return toast('appMsg','Выберите время приёма',false);
+  if(!freeSlots(aDoctor.value, aDate.value).includes(aTime))
+    return toast('appMsg','Это время уже занято — выберите другое',false);
 
   const doc = DOCTORS.find(d=>d.id===aDoctor.value);
   const appt = {
-    doctorId: doc.id,
-    patientId: patientId,
-    fio: p.fio,
-    card: p.card,
-    polis: p.polis,
-    phone: p.phone,
-    date: aDate.value,
-    time: aTime.value,
+    doctorId: doc.id, patientId,
+    fio: p.fio, card: p.card, polis: p.polis, phone: p.phone,
+    date: aDate.value, time: aTime,
     reason: aReason.value || 'Запись через регистратуру',
-    status: 'active',
-    createdAt: Date.now()
+    status: 'active', createdAt: Date.now()
   };
   db.ref('appointments').push(appt).then(()=>{
-    toast("appMsg", p.fio + " записан(а) к " + doc.spec + " — " + doc.name + ", " +
-      fmtDate(aDate.value) + " в " + aTime.value, true);
-    aFio.value=""; aNum.value=""; aPolicy.value=""; aBirth.value=""; aPhone.value=""; aTime.value="";
-    renderChips();
-  }).catch(err=>{
-    toast("appMsg","Ошибка записи: "+err.message,false);
-  });
+    toast('appMsg', p.fio + ' записан(а) к ' + doc.spec + ' — ' + doc.name +
+      ', ' + fmtDate(aDate.value) + ' в ' + aTime, true);
+    clearPatientFields();
+    aTime = ''; renderChips();
+  }).catch(err => toast('appMsg','Ошибка: '+err.message,false));
 }
 
 /* ============================================================
    РАСПИСАНИЕ
 ============================================================ */
 function renderSchedule(){
-  const q = document.getElementById("sSearch").value.trim().toLowerCase();
+  const q = document.getElementById('sSearch').value.trim().toLowerCase();
   const list = Object.entries(state.appointments)
-    .map(([id, a])=>({id, ...a}))
+    .map(([id,a])=>({id, ...a}))
     .filter(a=>a.status!=='cancelled')
-    .filter(a=>
-      String(a.fio||'').toLowerCase().includes(q) ||
-      String(a.doctorName||doctorName(a.doctorId)||'').toLowerCase().includes(q) ||
-      String(a.card||'').includes(q))
-    .sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+    .filter(a=>{
+      const d = DOCTORS.find(x=>x.id===a.doctorId);
+      return String(a.fio||'').toLowerCase().includes(q)
+          || String(a.card||'').includes(q)
+          || String(d?d.name:'').toLowerCase().includes(q)
+          || String(d?d.spec:'').toLowerCase().includes(q);
+    })
+    .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
 
-  document.getElementById("schedBody").innerHTML = list.map(a=>{
-    const doc = DOCTORS.find(d=>d.id===a.doctorId);
-    const docName = doc ? doc.name : (a.doctorName || '—');
-    const docSpec = doc ? doc.spec : (a.spec || '');
-    const referrer = a.referralFromName
+  document.getElementById('schedBody').innerHTML = list.map(a=>{
+    const d = DOCTORS.find(x=>x.id===a.doctorId);
+    const ref = a.referralFromName
       ? `<div class="hint" style="margin:2px 0 0;color:#b45309">↪ напр. от: ${esc(a.referralFromName)}</div>`
       : '';
     return `
-    <tr>
-      <td>${esc(fmtDate(a.date))}</td>
-      <td><b>${esc(a.time)}</b></td>
-      <td>${esc(docName)}<br><span class="hint" style="margin:0">${esc(docSpec)}</span>${referrer}</td>
-      <td><b>${esc(a.fio)}</b></td>
-      <td><span class="num-badge">№ ${esc(a.card||'—')}</span></td>
-      <td><button class="btn small danger" onclick="cancelApp('${a.id}')">Отменить</button></td>
-    </tr>`;
-  }).join("");
-  document.getElementById("schedEmpty").classList.toggle("hidden", list.length>0);
+      <tr>
+        <td>${esc(fmtDate(a.date))}</td>
+        <td><b>${esc(a.time)}</b></td>
+        <td>${esc(d?d.name:'—')}<br><span class="hint" style="margin:0">${esc(d?d.spec:'')} · каб. ${esc(d?d.room:'—')}</span>${ref}</td>
+        <td><b>${esc(a.fio)}</b></td>
+        <td><span class="num-badge">№ ${esc(a.card||'—')}</span></td>
+        <td><button class="btn small danger" onclick="cancelApp('${a.id}')">Отменить</button></td>
+      </tr>`;
+  }).join('');
+  document.getElementById('schedEmpty').classList.toggle('hidden', list.length>0);
 }
-function doctorName(id){ const d=DOCTORS.find(x=>x.id===id); return d?d.name:''; }
-document.getElementById("sSearch").addEventListener("input", renderSchedule);
+document.getElementById('sSearch').addEventListener('input', renderSchedule);
 
 function cancelApp(id){
-  if(!confirm("Отменить запись?")) return;
+  if(!confirm('Отменить запись?')) return;
   db.ref('appointments').child(id).remove();
 }
 
@@ -614,9 +653,9 @@ function cancelApp(id){
    СТАТИСТИКА
 ============================================================ */
 function updateStats(){
-  document.getElementById("statPatients").textContent = Object.keys(state.patients).length;
-  document.getElementById("statDoctors").textContent = DOCTORS.length;
-  document.getElementById("statApps").textContent =
+  document.getElementById('statPatients').textContent = Object.keys(state.patients).length;
+  document.getElementById('statDoctors').textContent  = DOCTORS.length;
+  document.getElementById('statApps').textContent     =
     Object.values(state.appointments).filter(a=>a.status!=='cancelled').length;
 }
 
@@ -625,17 +664,11 @@ function updateStats(){
 ============================================================ */
 db.ref('patients').on('value', snap=>{
   state.patients = snap.val() || {};
-  renderPatients();
-  renderDatalist();
-  updateStats();
+  renderPatients(); renderDatalist(); updateStats();
 });
-
 db.ref('appointments').on('value', snap=>{
   state.appointments = snap.val() || {};
-  renderSchedule();
-  // Перерисовываем чипы, чтобы освободившиеся слоты появились/занятые исчезли
-  if(typeof renderChips === 'function') renderChips();
-  updateStats();
+  renderSchedule(); renderChips(); updateStats();
 });
 
 /* ============================================================
